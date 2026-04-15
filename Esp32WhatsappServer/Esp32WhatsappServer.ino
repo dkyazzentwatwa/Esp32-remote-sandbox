@@ -68,7 +68,7 @@ public:
 };
 
 struct Room { const char* name; MsgBuffer* history; };
-struct Client {
+struct ChatClient {
   String nick;
   String room;
   bool active = false;
@@ -84,7 +84,7 @@ struct MsgRecord {
 };
 
 Room rooms[NUM_ROOMS] = {{"room1", nullptr}, {"room2", nullptr}};
-Client clients[MAX_CLIENTS];
+ChatClient clients[MAX_CLIENTS];
 MsgRecord msgTrack[MSG_TRACK_SIZE];
 int trackHead = 0;
 
@@ -153,7 +153,7 @@ bool roomMembershipValid(uint8_t sender, const String& room) {
 }
 
 void sendErr(uint8_t num, const __FlashStringHelper* text) {
-  StaticJsonDocument<128> doc;
+  JsonDocument doc;
   doc["type"] = "err";
   doc["text"] = text;
   String json;
@@ -161,18 +161,18 @@ void sendErr(uint8_t num, const __FlashStringHelper* text) {
   ws.sendTXT(num, json);
 }
 
-void broadcastRoom(const String& room, const String& json) {
+void broadcastRoom(const String& room, String json) {
   for (uint8_t i = 0; i < MAX_CLIENTS; i++)
     if (clients[i].active && clients[i].room == room) ws.sendTXT(i, json);
 }
 
-void broadcastRoomExcept(const String& room, uint8_t skip, const String& json) {
+void broadcastRoomExcept(const String& room, uint8_t skip, String json) {
   for (uint8_t i = 0; i < MAX_CLIENTS; i++)
     if (clients[i].active && clients[i].room == room && i != skip) ws.sendTXT(i, json);
 }
 
 void broadcastUsers(const String& room) {
-  StaticJsonDocument<600> doc;
+  JsonDocument doc;
   doc["type"] = "users";
   doc["room"] = room;
   JsonArray arr = doc.createNestedArray("users");
@@ -184,7 +184,7 @@ void broadcastUsers(const String& room) {
 
 String buildMsg(const String& id, const String& room, const String& nick,
                 const String& text, const String& ts, const String& date) {
-  StaticJsonDocument<640> doc;
+  JsonDocument doc;
   doc["type"] = "msg";
   doc["id"] = id;
   doc["room"] = room;
@@ -197,7 +197,7 @@ String buildMsg(const String& id, const String& room, const String& nick,
 }
 
 String buildSys(const String& room, const String& text) {
-  StaticJsonDocument<256> doc;
+  JsonDocument doc;
   doc["type"] = "sys";
   doc["room"] = room;
   doc["text"] = text;
@@ -293,7 +293,7 @@ void handleTextFrame(uint8_t num, uint8_t* payload, size_t len) {
     if (c < 0) return;
     String room = msg.substring(7, c);
     if (!roomMembershipValid(num, room)) return;
-    StaticJsonDocument<180> doc;
+    JsonDocument doc;
     doc["type"] = "typing";
     doc["room"] = room;
     doc["nick"] = clients[num].nick;
@@ -307,7 +307,7 @@ void handleTextFrame(uint8_t num, uint8_t* payload, size_t len) {
     String id = msg.substring(5); id.trim();
     int8_t sender = findSenderInRoom(id, clients[num].room);
     if (sender >= 0 && sender != (int8_t)num && clients[sender].active && clients[sender].room == clients[num].room) {
-      StaticJsonDocument<180> doc;
+      JsonDocument doc;
       doc["type"] = "seen";
       doc["id"] = id;
       doc["nick"] = clients[num].nick;
@@ -324,7 +324,7 @@ void handleTextFrame(uint8_t num, uint8_t* payload, size_t len) {
     String emoji = msg.substring(c + 1); emoji.trim();
     if (!id.length() || !emoji.length() || emoji.length() > 8) return;
 
-    StaticJsonDocument<220> doc;
+    JsonDocument doc;
     doc["type"] = "react";
     doc["id"] = id;
     doc["emoji"] = emoji;
@@ -353,7 +353,7 @@ void onWsEvent(uint8_t num, WStype_t type, uint8_t* payload, size_t len) {
       if (!clients[num].active) break;
       String room = clients[num].room;
       String nick = clients[num].nick;
-      clients[num] = Client();
+      clients[num] = ChatClient();
       if (room.length()) {
         broadcastRoom(room, buildSys(room, nick + " left"));
         broadcastUsers(room);
@@ -539,7 +539,7 @@ void handleRoot() {
 }
 
 void handleStatus() {
-  StaticJsonDocument<768> doc;
+  JsonDocument doc;
   doc["heap_free"] = ESP.getFreeHeap();
   doc["heap_total"] = ESP.getHeapSize();
   doc["uptime_sec"] = millis() / 1000;
@@ -583,7 +583,7 @@ void loadConfig() {
   File f = LittleFS.open("/config.json", "r");
   if (!f) return;
 
-  StaticJsonDocument<768> doc;
+  JsonDocument doc;
   DeserializationError err = deserializeJson(doc, f);
   f.close();
   if (err) {

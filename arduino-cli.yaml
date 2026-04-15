@@ -1,0 +1,6 @@
+board_manager:
+  additional_urls:
+    - https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32_index.json
+
+# Required libraries (install with: arduino-cli lib install "WebSockets" "ArduinoJson")
+# Required core (install with: arduino-cli core install esp32:esp32)
