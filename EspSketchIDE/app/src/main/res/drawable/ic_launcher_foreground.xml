@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- Simple angle-bracket "code" glyph -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M40,34 L24,54 L40,74 L45.5,68.5 L34.5,54 L45.5,39.5 Z" />
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M68,34 L84,54 L68,74 L62.5,68.5 L73.5,54 L62.5,39.5 Z" />
+    <path
+        android:fillColor="#FF6F00"
+        android:pathData="M58,32 L50,76 L54.5,76.8 L62.5,32.8 Z" />
+</vector>
