@@ -89,7 +89,7 @@ Therefore: **host executables ship in the APK; everything else is downloadable d
 5. **Incremental**: object cache keyed by hash(source + flags); prebuilt `core.a` reused unless
    board options differ from defaults.
 6. **UX**: progress, cancel, clickable diagnostics mapped via `#line` to the user's file/line.
-- Targets to validate in M0: Blink first build < 60 s (prebuilt core) on a mid-range arm64
+- Targets to validate in P0: Blink first build < 60 s (prebuilt core) on a mid-range arm64
   phone; edit-rebuild < 15 s.
 - Verification: golden tests vs desktop arduino-cli — byte-identical objects where possible,
   section-level comparison for the final image (timestamps differ).
@@ -147,17 +147,19 @@ UX:
 - Docs: privacy policy (no data collected; network only for packs/libraries), CONTRIBUTING,
   GPL source links, supported boards/phones matrix, "no iPhone" note.
 
-## Milestones
+## Phases
 
-| | Milestone | Exit criterion |
+Named P0–P6 to avoid clashing with the README's existing M0–M8 roadmap.
+
+| | Phase | Exit criterion |
 |---|---|---|
-| M0 | Spike (go/no-go) | CI-built static `cc1plus` runs from `nativeLibraryDir` on Android 8 and 15 devices; Blink compiles with a hand-made pack; minimal Kotlin ROM flasher uploads it. Failure → revisit design. |
-| M1 | Editor fixes + UX + targetSdk/CI/signing | Parallel with M0. Bugs 1–5 fixed with tests. |
-| M2 | Toolchain + pack pipelines | Tagged, reproducible artifacts with sha256. |
-| M3 | Build engine | Example set compiles; golden tests pass. |
-| M4 | Upload + serial monitor | Hardware matrix passes. |
-| M5 | Library manager | Resolve/install from index and `.zip`. |
-| M6 | v0.1 beta | One Circuit Hub class uses it. |
+| P0 | Spike (go/no-go) | CI-built static `cc1plus` runs from `nativeLibraryDir` on Android 8 and 15 devices; Blink compiles with a hand-made pack; minimal Kotlin ROM flasher uploads it. Failure → revisit design. |
+| P1 | Editor fixes + UX + targetSdk/CI/signing | Parallel with P0. Bugs 1–5 fixed with tests. |
+| P2 | Toolchain + pack pipelines | Tagged, reproducible artifacts with sha256. |
+| P3 | Build engine | Example set compiles; golden tests pass. |
+| P4 | Upload + serial monitor | Hardware matrix passes. |
+| P5 | Library manager | Resolve/install from index and `.zip`. |
+| P6 | v0.1 beta | One Circuit Hub class uses it. |
 
 After v0.1: v0.2 ESP32-S3/C3/C6 (adds `riscv32-esp-elf`) + stub flasher; v0.3 ESP8266
 (`xtensa-lx106-elf`); v0.4 AVR Uno/Nano (avr-gcc, STK500).
