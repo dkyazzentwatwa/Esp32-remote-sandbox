@@ -1,0 +1,30 @@
+<resources>
+    <string name="app_name">EspSketchIDE</string>
+
+    <string name="sketch_list_title">My Sketches</string>
+    <string name="sketch_list_empty">No sketches yet. Tap + to create one, or open an existing sketch folder.</string>
+    <string name="action_new_sketch">New sketch</string>
+    <string name="action_open_folder">Open existing sketch</string>
+    <string name="action_rename">Rename</string>
+    <string name="action_delete">Delete</string>
+    <string name="dialog_new_sketch_title">New sketch name</string>
+    <string name="dialog_rename_title">Rename sketch</string>
+    <string name="dialog_delete_title">Delete sketch?</string>
+    <string name="dialog_delete_message">This permanently deletes \"%1$s\" and all its files.</string>
+    <string name="dialog_cancel">Cancel</string>
+    <string name="dialog_ok">OK</string>
+    <string name="dialog_delete_confirm">Delete</string>
+    <string name="error_invalid_sketch_name">Sketch names must start with a letter and contain only letters, numbers, and underscores.</string>
+    <string name="error_sketch_exists">A sketch named \"%1$s\" already exists.</string>
+    <string name="error_no_storage_access">Grant access to a folder to store your sketches.</string>
+
+    <string name="editor_title">%1$s</string>
+    <string name="editor_unsaved_indicator">%1$s •</string>
+    <string name="action_save">Save</string>
+    <string name="action_add_file">Add file</string>
+    <string name="saved_toast">Saved</string>
+
+    <string name="board_esp32">ESP32</string>
+    <string name="board_esp8266">ESP8266</string>
+    <string name="roadmap_notice">Compiling and uploading sketches on-device is on the roadmap and not yet implemented — see the README for status.</string>
+</resources>

@@ -1,0 +1,10 @@
+<resources>
+    <color name="esp_primary">#00838F</color>
+    <color name="esp_primary_dark">#005662</color>
+    <color name="esp_accent">#FF6F00</color>
+    <color name="esp_background_light">#FAFAFA</color>
+    <color name="esp_background_dark">#121212</color>
+    <color name="esp_surface_light">#FFFFFF</color>
+    <color name="esp_surface_dark">#1E1E1E</color>
+    <color name="esp_on_primary">#FFFFFF</color>
+</resources>
