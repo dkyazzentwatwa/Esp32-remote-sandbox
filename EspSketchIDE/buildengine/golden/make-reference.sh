@@ -35,4 +35,11 @@ for dir in "$HERE"/app/src/main/assets/examples/*/*/; do
 done
 mkdir -p "$OUT/builds" && rm -rf "$OUT/builds/Blink" && ln -s "$OUT/build" "$OUT/builds/Blink"
 cp "$OUT/compile-verbose.txt" "$OUT/builds/Blink.verbose.txt"
+# Partition tables for every CSV the core ships, made by the core's own gen_esp32part.py.
+PLATFORM_DIR="$ARDUINO15/packages/esp32/hardware/esp32/$ESP32_CORE"
+mkdir -p "$OUT/partitions"
+for csv in "$PLATFORM_DIR"/tools/partitions/*.csv; do
+  python3 "$PLATFORM_DIR/tools/gen_esp32part.py" -q "$csv" "$OUT/partitions/$(basename "$csv" .csv).bin" \
+    || echo "gen_esp32part rejected $(basename "$csv")" >> "$OUT/partitions/rejected.txt"
+done
 echo "reference written to $OUT"

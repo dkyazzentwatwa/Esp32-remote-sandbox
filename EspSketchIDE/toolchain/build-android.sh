@@ -83,13 +83,15 @@ stage_sources() {
 
 stage_deps() {
   log "gmp/mpfr/mpc (static, for the Android host)"
-  local common=(--host="$TRIPLE" --prefix="$DEPS" --disable-shared --enable-static)
+  # --with-pic: they are linked into PIE programs. GMP's 32-bit ARM assembly isn't PIC, so it
+  # is disabled there (lld: "R_ARM_ABS32 cannot be used against symbol").
+  local common=(--host="$TRIPLE" --prefix="$DEPS" --disable-shared --enable-static --with-pic)
   for lib in "gmp-$GMP_VERSION" "mpfr-$MPFR_VERSION" "mpc-$MPC_VERSION"; do
     [ -f "$DEPS/.done-$lib" ] && continue
     rm -rf "$BUILD/$lib" && mkdir -p "$BUILD/$lib"
     local extra=()
     case "$lib" in
-      gmp-*)  extra=(--enable-cxx=no) ;;
+      gmp-*)  extra=(--enable-cxx=no); [ "$ABI" = armeabi-v7a ] && extra+=(--disable-assembly) ;;
       mpfr-*) extra=(--with-gmp="$DEPS") ;;
       mpc-*)  extra=(--with-gmp="$DEPS" --with-mpfr="$DEPS") ;;
     esac
