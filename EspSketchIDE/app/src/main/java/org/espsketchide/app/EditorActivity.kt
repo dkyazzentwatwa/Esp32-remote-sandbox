@@ -1,7 +1,6 @@
 package org.espsketchide.app
 
 import android.content.res.Configuration
-import android.net.Uri
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
@@ -9,12 +8,12 @@ import android.widget.EditText
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.content.IntentCompat
 import com.google.android.material.tabs.TabLayout
 import io.github.rosemoe.sora.langs.java.JavaLanguage
 import io.github.rosemoe.sora.widget.schemes.SchemeDarcula
 import io.github.rosemoe.sora.widget.schemes.SchemeGitHub
 import org.espsketchide.app.data.SketchAlreadyExistsException
+import org.espsketchide.app.data.DocumentFileStorage
 import org.espsketchide.app.data.SketchNameInvalidException
 import org.espsketchide.app.data.SketchRepository
 import org.espsketchide.app.databinding.ActivityEditorBinding
@@ -36,13 +35,13 @@ class EditorActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         val sketchName = intent.getStringExtra(EXTRA_SKETCH_NAME)
-        val folderUri = IntentCompat.getParcelableExtra(intent, EXTRA_SKETCH_FOLDER_URI, Uri::class.java)
-        if (sketchName == null || folderUri == null) {
+        val folderId = intent.getStringExtra(EXTRA_SKETCH_FOLDER_ID)
+        if (sketchName == null || folderId == null) {
             finish()
             return
         }
-        sketch = Sketch(sketchName, folderUri)
-        repository = SketchRepository(this)
+        sketch = Sketch(sketchName, folderId)
+        repository = SketchRepository(DocumentFileStorage(this))
 
         setSupportActionBar(binding.toolbar)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
@@ -86,13 +85,13 @@ class EditorActivity : AppCompatActivity() {
 
     private fun loadFile(file: SketchFile) {
         currentFile = file
-        val content = repository.readFile(file.uri)
+        val content = repository.readFile(file)
         binding.codeEditor.setText(content)
     }
 
     private fun saveCurrentFile() {
         val file = currentFile ?: return
-        repository.writeFile(file.uri, binding.codeEditor.text.toString())
+        repository.writeFile(file, binding.codeEditor.text.toString())
     }
 
     override fun onPause() {
@@ -154,6 +153,6 @@ class EditorActivity : AppCompatActivity() {
 
     companion object {
         const val EXTRA_SKETCH_NAME = "extra_sketch_name"
-        const val EXTRA_SKETCH_FOLDER_URI = "extra_sketch_folder_uri"
+        const val EXTRA_SKETCH_FOLDER_ID = "extra_sketch_folder_id"
     }
 }

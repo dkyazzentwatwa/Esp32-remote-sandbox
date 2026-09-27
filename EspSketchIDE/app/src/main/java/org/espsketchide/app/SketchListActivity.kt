@@ -14,6 +14,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import org.espsketchide.app.data.SketchAlreadyExistsException
+import org.espsketchide.app.data.DocumentFileStorage
 import org.espsketchide.app.data.SketchNameInvalidException
 import org.espsketchide.app.data.SketchRepository
 import org.espsketchide.app.databinding.ActivitySketchListBinding
@@ -23,6 +24,7 @@ import org.espsketchide.app.ui.SketchAdapter
 class SketchListActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivitySketchListBinding
+    private lateinit var storage: DocumentFileStorage
     private lateinit var repository: SketchRepository
     private lateinit var adapter: SketchAdapter
 
@@ -30,7 +32,7 @@ class SketchListActivity : AppCompatActivity() {
         ActivityResultContracts.OpenDocumentTree()
     ) { uri: Uri? ->
         if (uri != null) {
-            repository.setRoot(uri)
+            storage.setRoot(uri)
             refreshSketchList()
         }
     }
@@ -41,7 +43,8 @@ class SketchListActivity : AppCompatActivity() {
         setContentView(binding.root)
         setSupportActionBar(binding.toolbar)
 
-        repository = SketchRepository(this)
+        storage = DocumentFileStorage(this)
+        repository = SketchRepository(storage)
         adapter = SketchAdapter(
             onClick = { sketch -> openSketch(sketch) },
             onOverflowClick = { sketch, anchor -> showSketchOverflowMenu(sketch, anchor) }
@@ -92,7 +95,7 @@ class SketchListActivity : AppCompatActivity() {
     private fun openSketch(sketch: Sketch) {
         val intent = Intent(this, EditorActivity::class.java).apply {
             putExtra(EditorActivity.EXTRA_SKETCH_NAME, sketch.name)
-            putExtra(EditorActivity.EXTRA_SKETCH_FOLDER_URI, sketch.folderUri)
+            putExtra(EditorActivity.EXTRA_SKETCH_FOLDER_ID, sketch.folderId)
         }
         startActivity(intent)
     }

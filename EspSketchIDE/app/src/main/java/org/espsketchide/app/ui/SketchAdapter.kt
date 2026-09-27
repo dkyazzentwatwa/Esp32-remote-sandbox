@@ -31,7 +31,7 @@ class SketchAdapter(
     companion object {
         private val DIFF_CALLBACK = object : DiffUtil.ItemCallback<Sketch>() {
             override fun areItemsTheSame(oldItem: Sketch, newItem: Sketch) =
-                oldItem.folderUri == newItem.folderUri
+                oldItem.folderId == newItem.folderId
 
             override fun areContentsTheSame(oldItem: Sketch, newItem: Sketch) =
                 oldItem == newItem

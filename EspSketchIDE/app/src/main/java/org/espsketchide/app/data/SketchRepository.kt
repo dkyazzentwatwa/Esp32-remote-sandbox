@@ -1,17 +1,7 @@
 package org.espsketchide.app.data
 
-import android.content.Context
-import android.content.Intent
-import android.net.Uri
-import androidx.documentfile.provider.DocumentFile
 import org.espsketchide.app.model.Sketch
 import org.espsketchide.app.model.SketchFile
-import java.io.BufferedReader
-import java.io.InputStreamReader
-import java.io.OutputStreamWriter
-
-private const val PREFS_NAME = "esp_sketch_ide"
-private const val KEY_ROOT_URI = "sketches_root_uri"
 
 private val VALID_SKETCH_NAME = Regex("^[A-Za-z][A-Za-z0-9_]*$")
 private val EDITABLE_EXTENSIONS = setOf("ino", "h", "hpp", "c", "cpp", "cc", "txt")
@@ -20,119 +10,85 @@ class SketchNameInvalidException : Exception()
 class SketchAlreadyExistsException : Exception()
 
 /**
- * Reads and writes sketches as folders under a user-chosen Storage Access Framework
- * root, following the Arduino convention that a sketch folder's name matches its
- * primary .ino file's name.
+ * Reads and writes sketches as folders under the user-chosen sketchbook root, following the
+ * Arduino convention that a sketch folder's name matches its primary .ino file's name.
  */
-class SketchRepository(private val context: Context) {
+class SketchRepository(private val storage: SketchStorage) {
 
-    private val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-
-    fun hasRoot(): Boolean = rootUri() != null
-
-    fun rootUri(): Uri? {
-        val stored = prefs.getString(KEY_ROOT_URI, null) ?: return null
-        val uri = Uri.parse(stored)
-        val stillGranted = context.contentResolver.persistedUriPermissions.any {
-            it.uri == uri && it.isReadPermission && it.isWritePermission
-        }
-        return if (stillGranted) uri else null
-    }
-
-    fun setRoot(treeUri: Uri) {
-        context.contentResolver.takePersistableUriPermission(
-            treeUri,
-            Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
-        )
-        prefs.edit().putString(KEY_ROOT_URI, treeUri.toString()).apply()
-    }
-
-    private fun rootDocument(): DocumentFile? {
-        val uri = rootUri() ?: return null
-        return DocumentFile.fromTreeUri(context, uri)
-    }
+    fun hasRoot(): Boolean = storage.root() != null
 
     fun isValidSketchName(name: String): Boolean = VALID_SKETCH_NAME.matches(name)
 
     fun listSketches(): List<Sketch> {
-        val root = rootDocument() ?: return emptyList()
-        return root.listFiles()
-            .filter { it.isDirectory && it.name != null }
-            .sortedBy { it.name?.lowercase() }
-            .map { Sketch(it.name!!, it.uri) }
+        val root = storage.root() ?: return emptyList()
+        return storage.children(root)
+            .filter { it.isDirectory }
+            .sortedBy { it.name.lowercase() }
+            .map { Sketch(it.name, it.id) }
     }
 
     @Throws(SketchNameInvalidException::class, SketchAlreadyExistsException::class)
-    fun createSketch(name: String): Sketch {
+    fun createSketch(name: String, content: String = defaultSketchTemplate()): Sketch {
         if (!isValidSketchName(name)) throw SketchNameInvalidException()
-        val root = rootDocument() ?: throw IllegalStateException("No sketches root set")
-        if (root.findFile(name) != null) throw SketchAlreadyExistsException()
+        val root = storage.root() ?: throw IllegalStateException("No sketches root set")
+        if (storage.find(root, name) != null) throw SketchAlreadyExistsException()
 
-        val folder = root.createDirectory(name) ?: throw IllegalStateException("Could not create sketch folder")
-        val inoFile = folder.createFile("text/x-arduino", "$name.ino")
+        val folder = storage.createDirectory(root, name)
+            ?: throw IllegalStateException("Could not create sketch folder")
+        val inoFile = storage.createFile(folder, "text/x-arduino", "$name.ino")
             ?: throw IllegalStateException("Could not create $name.ino")
-        writeFile(inoFile.uri, defaultSketchTemplate())
-        return Sketch(name, folder.uri)
+        storage.write(inoFile, content)
+        return Sketch(name, folder.id)
     }
 
     @Throws(SketchNameInvalidException::class, SketchAlreadyExistsException::class)
     fun renameSketch(sketch: Sketch, newName: String) {
         if (!isValidSketchName(newName)) throw SketchNameInvalidException()
-        val root = rootDocument() ?: throw IllegalStateException("No sketches root set")
-        if (root.findFile(newName) != null) throw SketchAlreadyExistsException()
+        val root = storage.root() ?: throw IllegalStateException("No sketches root set")
+        if (storage.find(root, newName) != null) throw SketchAlreadyExistsException()
 
-        val folder = DocumentFile.fromTreeUri(context, sketch.folderUri)
-            ?: throw IllegalStateException("Sketch folder not found")
-        val primaryIno = folder.findFile("${sketch.name}.ino")
-        folder.renameTo(newName)
-        primaryIno?.renameTo("$newName.ino")
+        val folder = folderNode(sketch)
+        val primaryIno = storage.find(folder, sketch.primaryFileName)
+        storage.rename(folder, newName)
+        primaryIno?.let { storage.rename(it, "$newName.ino") }
     }
 
     fun deleteSketch(sketch: Sketch) {
-        DocumentFile.fromTreeUri(context, sketch.folderUri)?.delete()
+        storage.delete(folderNode(sketch))
     }
 
     fun listFiles(sketch: Sketch): List<SketchFile> {
-        val folder = DocumentFile.fromTreeUri(context, sketch.folderUri) ?: return emptyList()
-        val files = folder.listFiles()
-            .filter { it.isFile && it.name != null && extensionOf(it.name!!) in EDITABLE_EXTENSIONS }
-            .map { SketchFile(it.name!!, it.uri) }
+        val files = storage.children(folderNode(sketch))
+            .filter { !it.isDirectory && extensionOf(it.name) in EDITABLE_EXTENSIONS }
+            .map { SketchFile(it.name, it.id) }
 
         // Primary .ino file first, then the rest alphabetically.
-        val primaryName = "${sketch.name}.ino"
         return files.sortedWith(
-            compareBy({ it.name != primaryName }, { it.name.lowercase() })
+            compareBy({ it.name != sketch.primaryFileName }, { it.name.lowercase() })
         )
     }
 
     @Throws(SketchNameInvalidException::class, SketchAlreadyExistsException::class)
     fun addFile(sketch: Sketch, fileName: String): SketchFile {
-        val folder = DocumentFile.fromTreeUri(context, sketch.folderUri)
-            ?: throw IllegalStateException("Sketch folder not found")
+        val folder = folderNode(sketch)
         val ext = extensionOf(fileName)
         if (fileName.isBlank() || ext !in EDITABLE_EXTENSIONS || fileName.count { it == '.' } != 1) {
             throw SketchNameInvalidException()
         }
-        if (folder.findFile(fileName) != null) throw SketchAlreadyExistsException()
+        if (storage.find(folder, fileName) != null) throw SketchAlreadyExistsException()
 
-        val file = folder.createFile("text/plain", fileName)
+        val file = storage.createFile(folder, "text/plain", fileName)
             ?: throw IllegalStateException("Could not create $fileName")
-        return SketchFile(fileName, file.uri)
+        return SketchFile(fileName, file.id)
     }
 
-    fun readFile(uri: Uri): String {
-        context.contentResolver.openInputStream(uri).use { input ->
-            requireNotNull(input) { "Could not open $uri for reading" }
-            return BufferedReader(InputStreamReader(input)).readText()
-        }
-    }
+    fun readFile(file: SketchFile): String = storage.read(fileNode(file))
 
-    fun writeFile(uri: Uri, content: String) {
-        context.contentResolver.openOutputStream(uri, "wt").use { output ->
-            requireNotNull(output) { "Could not open $uri for writing" }
-            OutputStreamWriter(output).use { it.write(content) }
-        }
-    }
+    fun writeFile(file: SketchFile, content: String) = storage.write(fileNode(file), content)
+
+    private fun folderNode(sketch: Sketch) = StorageNode(sketch.folderId, sketch.name, isDirectory = true)
+
+    private fun fileNode(file: SketchFile) = StorageNode(file.id, file.name, isDirectory = false)
 
     private fun extensionOf(fileName: String): String = fileName.substringAfterLast('.', "")
 
