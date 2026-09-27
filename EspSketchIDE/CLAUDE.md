@@ -10,7 +10,7 @@ Status is early alpha (M0–M2 of the roadmap in `README.md`): sketch management
 
 ## Build
 
-Needs JDK 17+ and the Android SDK (compileSdk/targetSdk 34, minSdk 26). Uses Gradle 8.7 through the wrapper, AGP 8.5.2, and Kotlin 2.1.21.
+Needs JDK 17–21 (Gradle 8.7 can't run on JDK 22+; Android Studio's bundled JBR is 25, so set `JAVA_HOME` to a JDK 17/21, e.g. `/opt/homebrew/opt/openjdk@21`) and the Android SDK (compileSdk/targetSdk 34, minSdk 26). Uses Gradle 8.7 through the wrapper, AGP 8.5.2, and Kotlin 2.1.21.
 
 ```bash
 ./gradlew :app:assembleDebug        # APK -> app/build/outputs/apk/debug/app-debug.apk

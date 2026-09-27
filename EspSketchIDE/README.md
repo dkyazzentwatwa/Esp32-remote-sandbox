@@ -50,7 +50,11 @@ the roadmap.
 
 ## Building
 
-Requires JDK 17+ and the Android SDK (compileSdk 34, minSdk 26).
+Requires JDK 17–21 and the Android SDK (compileSdk 34, minSdk 26). The Gradle
+8.7 wrapper can't run on JDK 22+, and recent Android Studio releases bundle
+JDK 25, so point `JAVA_HOME` (or Android Studio's *Settings → Build Tools →
+Gradle → Gradle JDK*) at a JDK 17 or 21 install. Create `local.properties` with
+`sdk.dir=/path/to/Android/sdk` if Android Studio hasn't already.
 
 ```bash
 ./gradlew :app:assembleDebug

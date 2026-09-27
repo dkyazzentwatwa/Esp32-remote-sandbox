@@ -30,6 +30,16 @@ class EditorActivity : AppCompatActivity() {
     private var openFiles: List<SketchFile> = emptyList()
     private var currentFile: SketchFile? = null
 
+    private val fileTabListener = object : TabLayout.OnTabSelectedListener {
+        override fun onTabSelected(tab: TabLayout.Tab) {
+            saveCurrentFile()
+            loadFile(openFiles[tab.position])
+        }
+
+        override fun onTabUnselected(tab: TabLayout.Tab) = Unit
+        override fun onTabReselected(tab: TabLayout.Tab) = Unit
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityEditorBinding.inflate(layoutInflater)
@@ -66,19 +76,14 @@ class EditorActivity : AppCompatActivity() {
 
     private fun setupFileTabs() {
         openFiles = repository.listFiles(sketch)
+        // Detach while rebuilding so the auto-selection of the first added tab doesn't
+        // trigger a save/load, and so the listener is never registered more than once.
+        binding.fileTabLayout.removeOnTabSelectedListener(fileTabListener)
         binding.fileTabLayout.removeAllTabs()
         openFiles.forEach { file ->
             binding.fileTabLayout.addTab(binding.fileTabLayout.newTab().setText(file.name))
         }
-        binding.fileTabLayout.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
-            override fun onTabSelected(tab: TabLayout.Tab) {
-                saveCurrentFile()
-                loadFile(openFiles[tab.position])
-            }
-
-            override fun onTabUnselected(tab: TabLayout.Tab) = Unit
-            override fun onTabReselected(tab: TabLayout.Tab) = Unit
-        })
+        binding.fileTabLayout.addOnTabSelectedListener(fileTabListener)
         if (openFiles.isNotEmpty()) {
             loadFile(openFiles.first())
         }
@@ -146,9 +151,9 @@ class EditorActivity : AppCompatActivity() {
                 binding.fileTabLayout.getTabAt(newIndex)?.select()
             }
         } catch (e: SketchNameInvalidException) {
-            Toast.makeText(this, R.string.error_invalid_sketch_name, Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, R.string.error_invalid_file_name, Toast.LENGTH_LONG).show()
         } catch (e: SketchAlreadyExistsException) {
-            Toast.makeText(this, getString(R.string.error_sketch_exists, fileName), Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, getString(R.string.error_file_exists, fileName), Toast.LENGTH_SHORT).show()
         }
     }
 

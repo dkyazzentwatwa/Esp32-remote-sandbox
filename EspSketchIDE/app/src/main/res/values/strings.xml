@@ -16,6 +16,10 @@
     <string name="dialog_delete_confirm">Delete</string>
     <string name="error_invalid_sketch_name">Sketch names must start with a letter and contain only letters, numbers, and underscores.</string>
     <string name="error_sketch_exists">A sketch named \"%1$s\" already exists.</string>
+    <string name="error_rename_failed">Could not rename \"%1$s\".</string>
+    <string name="error_invalid_file_name">Use one extension: .ino .h .hpp .c .cpp .cc .txt</string>
+    <string name="error_file_exists">A file named \"%1$s\" already exists.</string>
+    <string name="action_more_options">More options</string>
     <string name="error_no_storage_access">Grant access to a folder to store your sketches.</string>
 
     <string name="editor_title">%1$s</string>

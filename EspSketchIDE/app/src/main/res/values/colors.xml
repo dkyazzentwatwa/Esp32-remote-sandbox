@@ -7,4 +7,5 @@
     <color name="esp_surface_light">#FFFFFF</color>
     <color name="esp_surface_dark">#1E1E1E</color>
     <color name="esp_on_primary">#FFFFFF</color>
+    <color name="esp_on_primary_muted">#B3FFFFFF</color>
 </resources>

@@ -21,8 +21,11 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:background="@color/esp_primary_dark"
+            app:tabGravity="start"
+            app:tabIndicatorColor="@color/esp_accent"
             app:tabMode="scrollable"
-            app:tabGravity="start" />
+            app:tabSelectedTextColor="@color/esp_on_primary"
+            app:tabTextColor="@color/esp_on_primary_muted" />
 
     </com.google.android.material.appbar.AppBarLayout>
 

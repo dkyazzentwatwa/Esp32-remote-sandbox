@@ -144,7 +144,10 @@ class SketchListActivity : AppCompatActivity() {
     }
 
     private fun promptRenameSketch(sketch: Sketch) {
-        val input = EditText(this).apply { setText(sketch.name) }
+        val input = EditText(this).apply {
+            setText(sketch.name)
+            setSelection(sketch.name.length)
+        }
         AlertDialog.Builder(this)
             .setTitle(R.string.dialog_rename_title)
             .setView(input)
@@ -163,6 +166,9 @@ class SketchListActivity : AppCompatActivity() {
             toast(getString(R.string.error_invalid_sketch_name))
         } catch (e: SketchAlreadyExistsException) {
             toast(getString(R.string.error_sketch_exists, newName))
+        } catch (e: IllegalStateException) {
+            toast(getString(R.string.error_rename_failed, sketch.name))
+            refreshSketchList()
         }
     }
 

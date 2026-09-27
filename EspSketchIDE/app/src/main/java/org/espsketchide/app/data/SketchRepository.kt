@@ -78,14 +78,23 @@ class SketchRepository(private val context: Context) {
     @Throws(SketchNameInvalidException::class, SketchAlreadyExistsException::class)
     fun renameSketch(sketch: Sketch, newName: String) {
         if (!isValidSketchName(newName)) throw SketchNameInvalidException()
+        if (newName == sketch.name) return
         val root = rootDocument() ?: throw IllegalStateException("No sketches root set")
         if (root.findFile(newName) != null) throw SketchAlreadyExistsException()
 
         val folder = DocumentFile.fromTreeUri(context, sketch.folderUri)
             ?: throw IllegalStateException("Sketch folder not found")
+        // Rename the .ino before its folder: on path-based providers (local storage)
+        // renaming the folder changes every child's document URI, so a handle to the
+        // .ino taken beforehand would be stale and its rename would silently fail.
         val primaryIno = folder.findFile("${sketch.name}.ino")
-        folder.renameTo(newName)
-        primaryIno?.renameTo("$newName.ino")
+        if (primaryIno != null && !primaryIno.renameTo("$newName.ino")) {
+            throw IllegalStateException("Could not rename ${sketch.name}.ino")
+        }
+        if (!folder.renameTo(newName)) {
+            primaryIno?.renameTo("${sketch.name}.ino")
+            throw IllegalStateException("Could not rename sketch folder")
+        }
     }
 
     fun deleteSketch(sketch: Sketch) {
@@ -115,7 +124,9 @@ class SketchRepository(private val context: Context) {
         }
         if (folder.findFile(fileName) != null) throw SketchAlreadyExistsException()
 
-        val file = folder.createFile("text/plain", fileName)
+        // application/octet-stream keeps the display name as-is; with a concrete MIME
+        // type like text/plain, providers append a matching extension (config.h.txt).
+        val file = folder.createFile("application/octet-stream", fileName)
             ?: throw IllegalStateException("Could not create $fileName")
         return SketchFile(fileName, file.uri)
     }
