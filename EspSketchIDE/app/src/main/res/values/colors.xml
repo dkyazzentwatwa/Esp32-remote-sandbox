@@ -7,4 +7,6 @@
     <color name="esp_surface_light">#FFFFFF</color>
     <color name="esp_surface_dark">#1E1E1E</color>
     <color name="esp_on_primary">#FFFFFF</color>
+    <color name="esp_error">#C62828</color>
+    <color name="esp_warning">#B45F00</color>
 </resources>

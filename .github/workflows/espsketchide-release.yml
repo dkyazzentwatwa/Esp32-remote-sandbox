@@ -1,6 +1,9 @@
 name: EspSketchIDE release
 
 # Push a tag like espsketchide-v0.0.2 to build signed APKs into a draft GitHub Release.
+# With the repository variable ESPSKETCHIDE_TOOLCHAIN_TAG set to a *published*
+# espsketchide-toolchain-* release, the APK bundles that compiler and downloads that
+# release's board pack; without it the APK is editor-only (compile/upload hidden).
 on:
   push:
     tags: ["espsketchide-v*"]
@@ -34,20 +37,46 @@ jobs:
           fi
           echo "$RELEASE_KEYSTORE_B64" | base64 -d > "$RUNNER_TEMP/release.jks"
           echo "RELEASE_KEYSTORE_PATH=$RUNNER_TEMP/release.jks" >> "$GITHUB_ENV"
+      - name: Compiler and board pack
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TOOLCHAIN_TAG: ${{ vars.ESPSKETCHIDE_TOOLCHAIN_TAG }}
+        run: |
+          if [ -z "$TOOLCHAIN_TAG" ]; then
+            echo "::warning::ESPSKETCHIDE_TOOLCHAIN_TAG is not set; building an editor-only APK."
+            exit 0
+          fi
+          tc="$RUNNER_TEMP/toolchain"
+          mkdir -p "$tc"
+          gh release download "$TOOLCHAIN_TAG" --repo "$GITHUB_REPOSITORY" --dir "$tc" \
+            --pattern 'xtensa-esp-elf-host-*.tar.xz' --pattern 'esp32-*.tar.xz' --pattern SHA256SUMS.txt
+          (cd "$tc" && sha256sum -c SHA256SUMS.txt)
+          dirs=""
+          for abi in arm64-v8a armeabi-v7a; do
+            archive=$(ls "$tc"/xtensa-esp-elf-host-*-"$abi".tar.xz)
+            tar -xJf "$archive" -C "$tc"
+            dirs="$dirs${dirs:+,}$abi=${archive%.tar.xz}"
+          done
+          pack=$(basename "$(ls "$tc"/esp32-*.tar.xz)")
+          sha=$(cd "$tc" && grep " $pack\$" SHA256SUMS.txt | cut -d' ' -f1)
+          {
+            echo "TOOLCHAIN_ARGS=-PtoolchainDirs=$dirs -PpackUrl=https://github.com/$GITHUB_REPOSITORY/releases/download/$TOOLCHAIN_TAG/$pack -PpackSha256=$sha"
+          } >> "$GITHUB_ENV"
       - name: Signed release APK
         env:
           RELEASE_KEYSTORE_PASSWORD: ${{ secrets.RELEASE_KEYSTORE_PASSWORD }}
           RELEASE_KEY_ALIAS: ${{ secrets.RELEASE_KEY_ALIAS }}
           RELEASE_KEY_PASSWORD: ${{ secrets.RELEASE_KEY_PASSWORD }}
-        run: ./gradlew :app:assembleRelease
+        run: ./gradlew :app:assembleRelease $TOOLCHAIN_ARGS
       - name: Draft GitHub Release
         env:
           GH_TOKEN: ${{ github.token }}
           TAG: ${{ github.ref_name }}
+          TOOLCHAIN_TAG: ${{ vars.ESPSKETCHIDE_TOOLCHAIN_TAG }}
         run: |
           version="${TAG#espsketchide-v}"
           mkdir -p dist
           cp app/build/outputs/apk/release/app-release.apk "dist/EspSketchIDE-$version.apk"
           (cd dist && sha256sum *.apk > SHA256SUMS.txt)
           gh release create "$TAG" dist/* --draft --title "EspSketchIDE $version" \
-            --notes "Draft: edit these notes before publishing. See EspSketchIDE/README.md for what this version can and cannot do."
+            --notes "Draft: edit these notes before publishing. See EspSketchIDE/README.md for what this version can and cannot do. ${TOOLCHAIN_TAG:+The APK includes GCC and binutils (GPL-3.0) from release $TOOLCHAIN_TAG; their sources are the Espressif refs listed there and EspSketchIDE/toolchain/build-android.sh.}"

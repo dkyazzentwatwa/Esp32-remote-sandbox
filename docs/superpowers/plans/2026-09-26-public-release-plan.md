@@ -352,12 +352,14 @@ through a thin Android service. A `:cli` module wraps it for desktop/CI golden t
       image sizes. Also run the same job on `ubuntu-24.04-arm` with *our* musl toolchain.
 
 ### P3.10 Android integration
-- [ ] `BuildService`: foreground service (`foregroundServiceType="specialUse"` with
-      `PROPERTY_SPECIAL_USE_FGS_SUBTYPE` = "on-device compilation"), progress notification,
-      cancel. Stages sketch from SAF into `filesDir/build/<hash>/src`. Env: `TMPDIR`, `PATH`,
-      `COMPILER_PATH`/`GCC_EXEC_PREFIX` per `ToolchainPaths`.
-- [ ] UI (behind `EXPERIMENTAL` until P4 done): board picker (menus from `pack.json`), Verify
-      button, output panel with clickable diagnostics.
+- [x] Build runner: `BuildController` in the app scope, staging via `SketchStager` into
+      `cacheDir/stage`, env from `XtensaToolchainRunner` plus `TMPDIR`; screen kept on while
+      it runs. **Deferred:** a foreground service (`specialUse`) with a progress
+      notification and cancel. Builds survive leaving the screen but not the app being
+      killed in the background; revisit after device timings (and the Play FGS review).
+- [x] UI (labelled experimental, one-time notice): board picker (board list from
+      `pack.json`; menu options use the defaults for now), Verify/Upload actions, output
+      panel with clickable diagnostics and the full compiler output.
 - [ ] Device test: Blink first build (with pack `core.a`) and rebuild times vs spec targets.
 
 ---

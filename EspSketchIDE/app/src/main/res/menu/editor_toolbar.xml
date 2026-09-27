@@ -12,10 +12,32 @@
         android:title="@string/action_redo"
         app:showAsAction="always" />
     <item
+        android:id="@+id/action_verify"
+        android:icon="@drawable/ic_verify"
+        android:title="@string/action_verify"
+        android:visible="false"
+        app:showAsAction="ifRoom" />
+    <item
+        android:id="@+id/action_upload"
+        android:icon="@drawable/ic_upload"
+        android:title="@string/action_upload"
+        android:visible="false"
+        app:showAsAction="ifRoom" />
+    <item
+        android:id="@+id/action_serial_monitor"
+        android:title="@string/action_serial_monitor"
+        android:visible="false"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/action_board"
+        android:title="@string/action_board_none"
+        android:visible="false"
+        app:showAsAction="never" />
+    <item
         android:id="@+id/action_save"
         android:icon="@android:drawable/ic_menu_save"
         android:title="@string/action_save"
-        app:showAsAction="ifRoom" />
+        app:showAsAction="never" />
     <item
         android:id="@+id/action_add_file"
         android:title="@string/action_add_file"

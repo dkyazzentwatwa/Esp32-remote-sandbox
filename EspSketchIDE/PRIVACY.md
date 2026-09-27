@@ -17,13 +17,15 @@ and it does not send your sketches anywhere.
 
 ## When the app uses the network
 
-Current versions do not use the network at all. Planned versions will connect
-to the internet only when you ask them to:
+The app connects to the internet only when you ask it to:
 
-- to download an ESP32 **board pack** (compiler libraries) from this project's
-  GitHub Releases, and
-- to download the **Arduino library index** and the libraries you choose to
-  install (from Arduino's and the library authors' servers).
+- to download the ESP32 **board pack** (compiler libraries) from this project's
+  GitHub Releases, when you tap Download. You can also import the pack from a
+  file instead, and then the app never uses the network.
+
+Compiling and uploading happen entirely on your phone. A planned library
+manager will also download the **Arduino library index** and the libraries you
+choose to install (from Arduino's and the library authors' servers).
 
 Those servers see an ordinary download request (your IP address and the file
 requested), as with any download. The app sends no identifiers of its own.

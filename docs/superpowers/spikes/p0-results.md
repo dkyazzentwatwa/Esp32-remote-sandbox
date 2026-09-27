@@ -134,3 +134,26 @@ dependencies should be precomputed into the board pack (P2).
 On real phones (needs the maintainer, see `EspSketchIDE/spike/README.md`): exec/dlopen paths
 (P0.1), Blink compile time and peak toolchain memory (P0.4), flash time (P0.5, flasher not
 written yet). Also: the armeabi-v7a toolchain build.
+
+## App pipeline under emulation (2026-09-27)
+
+`app/src/test/.../compile/OnDeviceCompileTest` runs the app's real compile path: `PackManager`
+installs `esp32-3.3.12.tar.xz` (7743 files, all sha256-checked), `Toolchain` links the
+arm64 Android binaries (named as in the APK, `libxt*.so`) into a tree, `SketchStager` copies
+sketches from (fake) SAF storage, and `BuildController` + `SketchCompiler` build them, with
+the Android binaries running under qemu-aarch64 + bionic from the emulator image.
+
+| Sketch | Program (app) | Program (arduino-cli) | Globals (both) |
+|---|---|---|---|
+| Blink | 257 676 | 257 628 | 22 100 |
+| WiFiScan | 877 108 | 877 060 | 45 680 |
+
+Globals match. Program is 48 bytes larger in both, which fits longer embedded `__FILE__`
+strings (pack path under the test's temp folder vs `~/.arduino15`), the same effect
+`PackBuildTest` documents; not proven byte by byte. A deliberate typo comes back as a
+`Blink.ino:2` diagnostic. About 5 minutes for both builds under emulation, which says
+nothing about phone speed.
+
+A debug APK bundling both ABIs is 67.7 MB (editor-only: 10.9 MB).
+Still unverified: real phones (W^X exec from nativeLibraryDir on each Android version,
+build time, memory), USB permission and upload on real CP210x/CH340 boards, 460800 baud.

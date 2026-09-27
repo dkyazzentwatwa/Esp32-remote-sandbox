@@ -20,7 +20,11 @@ import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.snackbar.Snackbar
+import com.google.android.material.progressindicator.LinearProgressIndicator
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import org.espsketchide.app.compile.PackInstallState
 import org.espsketchide.app.databinding.ActivitySketchListBinding
 import org.espsketchide.app.examples.AssetExampleSource
 import org.espsketchide.app.model.Sketch
@@ -57,6 +61,15 @@ class SketchListActivity : AppCompatActivity() {
         }
     }
 
+    private val importPack = registerForActivityResult(ActivityResultContracts.OpenDocument()) { uri: Uri? ->
+        if (uri != null && hasSpaceForPack()) {
+            app.packInstaller.import { contentResolver.openInputStream(uri) ?: throw java.io.IOException("Can't read the file") }
+        }
+    }
+
+    private var packDialog: AlertDialog? = null
+    private var packProgress: LinearProgressIndicator? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
@@ -80,6 +93,7 @@ class SketchListActivity : AppCompatActivity() {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 launch { viewModel.state.collect(::render) }
                 launch { viewModel.open.collect(::openSketch) }
+                if (app.canCompile) launch { app.packInstaller.state.collect(::renderPackInstall) }
                 launch {
                     viewModel.errors.collect { error ->
                         Snackbar.make(binding.root, getString(error.message, error.arg), Snackbar.LENGTH_LONG).show()
@@ -103,8 +117,17 @@ class SketchListActivity : AppCompatActivity() {
         return true
     }
 
+    override fun onPrepareOptionsMenu(menu: Menu): Boolean {
+        menu.findItem(R.id.action_board_pack)?.isVisible = app.canCompile
+        return super.onPrepareOptionsMenu(menu)
+    }
+
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
+            R.id.action_board_pack -> {
+                showBoardPack()
+                true
+            }
             R.id.action_change_folder -> {
                 pickRootFolder.launch(null)
                 true
@@ -115,6 +138,84 @@ class SketchListActivity : AppCompatActivity() {
             }
             else -> super.onOptionsItemSelected(item)
         }
+    }
+
+    private fun showBoardPack() {
+        lifecycleScope.launch {
+            val pack = withContext(Dispatchers.IO) { app.esp32Pack() }
+            val message = if (pack != null) getString(R.string.pack_installed, pack.core, pack.boards.size) else getString(R.string.pack_missing)
+            val dialog = AlertDialog.Builder(this@SketchListActivity)
+                .setTitle(R.string.pack_title)
+                .setMessage(message)
+                .setPositiveButton(R.string.pack_import) { _, _ -> importPack.launch(arrayOf("application/x-xz", "application/octet-stream", "*/*")) }
+            // Download only when this build knows where the pack is published.
+            if (BuildConfig.PACK_URL.isNotEmpty() && pack == null) {
+                dialog.setNeutralButton(R.string.pack_download) { _, _ ->
+                    if (hasSpaceForPack()) app.packInstaller.download(BuildConfig.PACK_URL, BuildConfig.PACK_SHA256.ifEmpty { null })
+                }
+            }
+            if (pack != null) {
+                dialog.setNegativeButton(R.string.pack_remove) { _, _ ->
+                    app.appScope.launch {
+                        app.packs.remove(pack.id)
+                        withContext(Dispatchers.Main) { Snackbar.make(binding.root, R.string.pack_removed, Snackbar.LENGTH_SHORT).show() }
+                    }
+                }
+            }
+            dialog.show()
+        }
+    }
+
+    private fun hasSpaceForPack(): Boolean {
+        if (filesDir.usableSpace >= PACK_SPACE_BYTES) return true
+        Snackbar.make(binding.root, R.string.pack_no_space, Snackbar.LENGTH_LONG).show()
+        return false
+    }
+
+    private fun renderPackInstall(state: PackInstallState) {
+        when (state) {
+            is PackInstallState.Working -> {
+                val progress = packProgress ?: LinearProgressIndicator(this).also { packProgress = it }
+                val dialog = packDialog ?: AlertDialog.Builder(this)
+                    .setTitle(R.string.pack_title)
+                    .setMessage(" ")
+                    .setView(progress.apply {
+                        val pad = (24 * resources.displayMetrics.density).toInt()
+                        setPadding(pad, 0, pad, 0)
+                    })
+                    .setCancelable(false)
+                    .show()
+                    .also { packDialog = it }
+                dialog.setMessage(getString(R.string.pack_progress, state.stage))
+                if (state.fraction == null) progress.isIndeterminate = true
+                else {
+                    progress.isIndeterminate = false
+                    progress.setProgressCompat((state.fraction * 100).toInt(), false)
+                }
+            }
+            else -> {
+                packDialog?.dismiss()
+                packDialog = null
+                packProgress = null
+                when (state) {
+                    is PackInstallState.Installed ->
+                        Snackbar.make(binding.root, getString(R.string.pack_done, state.id), Snackbar.LENGTH_LONG).show()
+                    is PackInstallState.Failed ->
+                        Snackbar.make(binding.root, getString(R.string.pack_failed, state.message), Snackbar.LENGTH_INDEFINITE)
+                            .setAction(R.string.dialog_ok) {}
+                            .show()
+                    else -> Unit
+                }
+                if (state !is PackInstallState.Idle) app.packInstaller.acknowledge()
+            }
+        }
+    }
+
+    override fun onDestroy() {
+        packDialog?.dismiss()
+        packDialog = null
+        packProgress = null
+        super.onDestroy()
     }
 
     private fun pickExample() {
@@ -203,5 +304,10 @@ class SketchListActivity : AppCompatActivity() {
             .setPositiveButton(R.string.dialog_delete_confirm) { _, _ -> viewModel.delete(sketch) }
             .setNegativeButton(R.string.dialog_cancel, null)
             .show()
+    }
+
+    private companion object {
+        /** An installed pack takes about 260 MB; leave room for the extraction and builds. */
+        const val PACK_SPACE_BYTES = 300L * 1024 * 1024
     }
 }

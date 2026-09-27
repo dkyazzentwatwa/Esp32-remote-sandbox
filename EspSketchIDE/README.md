@@ -6,7 +6,7 @@ sketches on your phone or tablet — inspired by
 but independently written and MIT-licensed. It is **not** affiliated with or
 a republish of ArduinoDroid.
 
-## Status: editor alpha (v0.1.0-alpha)
+## Status: alpha; compile and upload are experimental (v0.1.0-alpha)
 
 EspSketchIDE is being built so that students (starting with the Circuit Hub
 community) can write, compile and upload Arduino sketches **entirely from an
@@ -20,14 +20,24 @@ Android phone, offline**. The design and plan are in
   autosave.
 - ✅ Eight example sketches (Blink through WiFi and Bluetooth) that are checked
   in CI to compile for the ESP32.
-- 🚧 **Compiling and uploading are not implemented yet.** They are not stubbed
-  in as fake buttons, so the app only claims what it actually does.
+- 🧪 **Verify, Upload and Serial monitor (experimental)** for ESP32 boards, fully
+  offline once the ESP32 board pack is installed. The compiler (Espressif's GCC
+  14.2, built for Android) ships inside the APK; the build engine, image tools
+  and USB flasher are written from scratch for this app. They match
+  arduino-cli and esptool byte for byte in our emulated tests (Android
+  binaries under qemu, the ESP32 ROM in Espressif's QEMU), **but haven't been
+  tried on many real phones and boards yet**, so the app labels them
+  experimental.
+- Only the libraries that come with the board pack (WiFi, BLE, Preferences,
+  …) can be used for now; the library manager is next.
+- Builds without the compiler (the plain `assembleDebug` below) hide these
+  actions instead of showing buttons that can't work.
 
 ### Supported devices
 
 | | |
 |---|---|
-| Phones | Android 8.0 (API 26) or newer, 64-bit or 32-bit ARM. Compiling will need a one-time ESP32 board-pack download (estimated 80–150 MB; to be measured). |
+| Phones | Android 8.0 (API 26) or newer, 64-bit or 32-bit ARM. Compiling needs a one-time ESP32 board pack: 36 MB download, 260 MB installed. The APK with the compiler is about 28 MB larger per CPU type (68 MB for both). |
 | Boards (first) | ESP32 "classic" dev boards (ESP32 DevKitC and clones) with a CP210x, CH340/CH9102 or FTDI USB chip |
 | Boards (later) | ESP32-S3/C3/C6, ESP8266, Arduino Uno/Nano |
 | Not supported | **iPhone/iPad**: iOS doesn't allow apps to run a compiler or talk to USB-serial boards. |
@@ -58,13 +68,15 @@ Done:
 Toward v0.1 (see the [plan](../docs/superpowers/plans/2026-09-26-public-release-plan.md)):
 
 - [ ] P0 — Feasibility spike: run an Android build of the ESP32 GCC toolchain
-      from the APK, compile Blink on a phone, flash it over USB
+      from the APK, compile Blink on a phone, flash it over USB — done under
+      emulation; real phones and boards still to do
 - [x] P1 — Editor fixes and student UX (symbol bar, examples, undo/redo, text
       size, C++ highlighting, targetSdk 36, CI, signed releases) — device
       testing still to do
-- [ ] P2 — Toolchain and ESP32 board-pack build pipelines
-- [ ] P3 — On-device build engine (`.ino` preprocessing, libraries, recipes)
-- [ ] P4 — Upload over USB (esptool ROM protocol) and serial monitor
+- [x] P2 — Toolchain and ESP32 board-pack build pipelines
+- [x] P3 — On-device build engine (`.ino` preprocessing, libraries, recipes)
+- [x] P4 — Upload over USB (esptool ROM protocol) and serial monitor —
+      device testing still to do
 - [ ] P5 — Library manager (Arduino library index, `.zip` install)
 - [ ] P6 — v0.1 beta with a Circuit Hub class
 
@@ -76,8 +88,20 @@ Requires JDK 17+ and the Android SDK (compileSdk 37, targetSdk 36, minSdk 26).
 
 ```bash
 ./gradlew :app:testDebugUnitTest   # unit tests
-./gradlew :app:assembleDebug       # APK at app/build/outputs/apk/debug/app-debug.apk
+./gradlew :app:assembleDebug       # editor-only APK at app/build/outputs/apk/debug/app-debug.apk
 ```
+
+To include the compiler, build it with `toolchain/build-android.sh` (or take
+it from a `espsketchide-toolchain-*` release) and pass one folder per CPU type:
+
+```bash
+./gradlew :app:assembleDebug \
+  -PtoolchainDirs=arm64-v8a=/path/to/xtensa-esp-elf-host-…-arm64-v8a,armeabi-v7a=/path/to/…-armeabi-v7a
+```
+
+The board pack comes from `toolchain/make-pack.py`; install it in the app with
+**Board pack → Import file**. `-PpackUrl=… -PpackSha256=…` adds a Download
+button that fetches it instead.
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for more, and [PRIVACY.md](PRIVACY.md)
 for what the app does with your data (nothing leaves your phone).

@@ -40,5 +40,55 @@
     <string name="action_new_from_example">New from example</string>
     <string name="dialog_examples_title">Examples</string>
 
-    <string name="roadmap_notice">Compiling and uploading sketches on-device is on the roadmap and not yet implemented — see the README for status.</string>
+    <string name="roadmap_notice">This build of the app can edit sketches but has no compiler. Get the full APK from the project\'s GitHub Releases to compile and upload.</string>
+
+    <!-- Compile and upload (experimental) -->
+    <string name="action_verify">Verify (experimental)</string>
+    <string name="action_upload">Upload (experimental)</string>
+    <string name="action_serial_monitor">Serial monitor</string>
+    <string name="action_board">Board: %1$s</string>
+    <string name="action_board_none">Board…</string>
+    <string name="action_board_pack">Board pack</string>
+    <string name="action_show_output">Full output</string>
+    <string name="dialog_board_title">Board</string>
+    <string name="dialog_output_title">Compiler output</string>
+    <string name="dialog_experimental_title">Experimental</string>
+    <string name="dialog_experimental_message">Compiling and uploading on the phone is new and hasn\'t been tested on many phones and boards yet. If something goes wrong, please report it on GitHub with the full output.\n\nThis version builds for the ESP32 (not S2/S3/C3 yet) with the libraries that come with the board pack.</string>
+    <string name="error_no_compiler">This build of the app has no compiler.</string>
+    <string name="error_no_pack">Install the ESP32 board pack first: Board pack, in the sketch list\'s menu.</string>
+    <string name="error_busy">Wait for the current build to finish.</string>
+    <string name="error_no_usb">No USB serial device found. Connect the board with a USB OTG cable or adapter.</string>
+    <string name="error_usb_permission">The app needs permission to use the USB device.</string>
+    <string name="error_usb_open">Couldn\'t open the USB device: %1$s</string>
+    <string name="dialog_usb_title">Choose the board</string>
+    <string name="build_verifying">Verifying %1$s</string>
+    <string name="build_uploading">Uploading %1$s</string>
+    <string name="build_step">%1$s: %2$s</string>
+    <string name="build_verified">Compiled. %1$s</string>
+    <string name="build_uploaded">Uploaded. %1$s</string>
+    <string name="build_failed">Failed: %1$s</string>
+    <string name="build_uploaded_short">Uploaded. The board is running your sketch.</string>
+    <string name="action_open_monitor">Serial monitor</string>
+
+    <!-- Board pack -->
+    <string name="pack_title">ESP32 board pack</string>
+    <string name="pack_installed">Installed: ESP32 core %1$s, %2$d boards.</string>
+    <string name="pack_missing">Not installed. Compiling needs the ESP32 board pack: about 36 MB to download and 260 MB once installed.</string>
+    <string name="pack_import">Import file</string>
+    <string name="pack_download">Download</string>
+    <string name="pack_remove">Remove</string>
+    <string name="pack_progress">%1$s…</string>
+    <string name="pack_done">Board pack %1$s installed.</string>
+    <string name="pack_removed">Board pack removed.</string>
+    <string name="pack_failed">Couldn\'t install the board pack: %1$s</string>
+    <string name="pack_no_space">Not enough free space: the board pack needs about 300 MB.</string>
+
+    <!-- Serial monitor -->
+    <string name="monitor_title">Serial monitor</string>
+    <string name="monitor_hint">Send to the board</string>
+    <string name="monitor_send">Send</string>
+    <string name="monitor_baud">Baud rate: %1$d</string>
+    <string name="monitor_clear">Clear</string>
+    <string name="monitor_reset">Reset board</string>
+    <string name="monitor_disconnected">Disconnected: %1$s</string>
 </resources>

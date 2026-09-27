@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="esp_error">#EF9A9A</color>
+    <color name="esp_warning">#FFCC80</color>
+</resources>

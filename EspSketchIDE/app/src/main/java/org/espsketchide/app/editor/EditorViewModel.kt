@@ -88,6 +88,9 @@ class EditorViewModel(
         }
     }
 
+    /** Saves before a build so the compiler sees what's on screen. False if a file couldn't be saved. */
+    suspend fun saveBeforeBuild(): Boolean = saveDirty(reportErrors = true)
+
     /** Saves unsaved edits even if the screen is going away. */
     fun saveInBackground() {
         persistScope.launch { saveDirty(reportErrors = false) }

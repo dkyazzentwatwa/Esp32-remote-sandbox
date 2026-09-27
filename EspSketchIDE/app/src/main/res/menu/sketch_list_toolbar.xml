@@ -9,4 +9,9 @@
         android:id="@+id/action_change_folder"
         android:title="@string/action_open_folder"
         app:showAsAction="never" />
+    <item
+        android:id="@+id/action_board_pack"
+        android:title="@string/action_board_pack"
+        android:visible="false"
+        app:showAsAction="never" />
 </menu>

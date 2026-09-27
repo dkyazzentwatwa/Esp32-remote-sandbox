@@ -53,6 +53,9 @@ android {
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         buildConfigField("boolean", "TOOLCHAIN_BUNDLED", toolchainDirs.isNotEmpty().toString())
+        // Where "Download" gets the board pack (-PpackUrl, -PpackSha256); empty hides the button.
+        buildConfigField("String", "PACK_URL", "\"${providers.gradleProperty("packUrl").getOrElse("")}\"")
+        buildConfigField("String", "PACK_SHA256", "\"${providers.gradleProperty("packSha256").getOrElse("")}\"")
         if (toolchainDirs.isNotEmpty()) ndk { abiFilters += toolchainDirs.keys }
     }
 
