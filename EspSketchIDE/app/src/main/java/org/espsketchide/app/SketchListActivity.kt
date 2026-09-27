@@ -8,34 +8,45 @@ import android.view.MenuItem
 import android.view.View
 import android.widget.EditText
 import android.widget.PopupMenu
-import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
+import androidx.lifecycle.viewmodel.initializer
+import androidx.lifecycle.viewmodel.viewModelFactory
 import androidx.recyclerview.widget.LinearLayoutManager
-import org.espsketchide.app.data.SketchAlreadyExistsException
-import org.espsketchide.app.data.SketchDeleteFailedException
-import org.espsketchide.app.data.DocumentFileStorage
-import org.espsketchide.app.data.SketchNameInvalidException
-import org.espsketchide.app.data.SketchRenameFailedException
-import org.espsketchide.app.data.SketchRepository
+import com.google.android.material.snackbar.Snackbar
+import kotlinx.coroutines.launch
 import org.espsketchide.app.databinding.ActivitySketchListBinding
 import org.espsketchide.app.model.Sketch
+import org.espsketchide.app.sketches.SketchListUiState
+import org.espsketchide.app.sketches.SketchListViewModel
 import org.espsketchide.app.ui.SketchAdapter
 
 class SketchListActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivitySketchListBinding
-    private lateinit var storage: DocumentFileStorage
-    private lateinit var repository: SketchRepository
     private lateinit var adapter: SketchAdapter
+
+    private val app get() = application as EspSketchApp
+
+    private val viewModel: SketchListViewModel by viewModels {
+        viewModelFactory { initializer { SketchListViewModel((application as EspSketchApp).repository) } }
+    }
 
     private val pickRootFolder = registerForActivityResult(
         ActivityResultContracts.OpenDocumentTree()
     ) { uri: Uri? ->
         if (uri != null) {
-            storage.setRoot(uri)
-            refreshSketchList()
+            try {
+                app.storage.setRoot(uri)
+            } catch (e: SecurityException) {
+                Snackbar.make(binding.root, R.string.error_storage_failed, Snackbar.LENGTH_LONG).show()
+            }
+            viewModel.refresh()
         }
     }
 
@@ -45,8 +56,6 @@ class SketchListActivity : AppCompatActivity() {
         setContentView(binding.root)
         setSupportActionBar(binding.toolbar)
 
-        storage = DocumentFileStorage(this)
-        repository = SketchRepository(storage)
         adapter = SketchAdapter(
             onClick = { sketch -> openSketch(sketch) },
             onOverflowClick = { sketch, anchor -> showSketchOverflowMenu(sketch, anchor) }
@@ -56,14 +65,25 @@ class SketchListActivity : AppCompatActivity() {
 
         binding.newSketchFab.setOnClickListener { promptNewSketch() }
 
-        if (!repository.hasRoot()) {
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                launch { viewModel.state.collect(::render) }
+                launch {
+                    viewModel.errors.collect { error ->
+                        Snackbar.make(binding.root, getString(error.message, error.arg), Snackbar.LENGTH_LONG).show()
+                    }
+                }
+            }
+        }
+
+        if (savedInstanceState == null && app.storage.rootUri() == null) {
             pickRootFolder.launch(null)
         }
     }
 
     override fun onResume() {
         super.onResume()
-        refreshSketchList()
+        viewModel.refresh()
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -79,19 +99,16 @@ class SketchListActivity : AppCompatActivity() {
         return super.onOptionsItemSelected(item)
     }
 
-    private fun refreshSketchList() {
-        if (!repository.hasRoot()) {
-            binding.emptyStateText.visibility = View.VISIBLE
-            binding.emptyStateText.text = getString(R.string.error_no_storage_access)
-            adapter.submitList(emptyList())
-            return
+    private fun render(state: SketchListUiState) {
+        adapter.submitList(state.sketches)
+        val emptyText = when {
+            state.loading -> null
+            !state.hasRoot -> getString(R.string.error_no_storage_access)
+            state.sketches.isEmpty() -> getString(R.string.sketch_list_empty)
+            else -> null
         }
-        val sketches = repository.listSketches()
-        adapter.submitList(sketches)
-        binding.emptyStateText.visibility = if (sketches.isEmpty()) View.VISIBLE else View.GONE
-        if (sketches.isEmpty()) {
-            binding.emptyStateText.text = getString(R.string.sketch_list_empty)
-        }
+        binding.emptyStateText.visibility = if (emptyText == null) View.GONE else View.VISIBLE
+        binding.emptyStateText.text = emptyText
     }
 
     private fun openSketch(sketch: Sketch) {
@@ -122,7 +139,7 @@ class SketchListActivity : AppCompatActivity() {
     }
 
     private fun promptNewSketch() {
-        if (!repository.hasRoot()) {
+        if (!viewModel.state.value.hasRoot) {
             pickRootFolder.launch(null)
             return
         }
@@ -130,22 +147,9 @@ class SketchListActivity : AppCompatActivity() {
         AlertDialog.Builder(this)
             .setTitle(R.string.dialog_new_sketch_title)
             .setView(input)
-            .setPositiveButton(R.string.dialog_ok) { _, _ ->
-                createSketch(input.text.toString().trim())
-            }
+            .setPositiveButton(R.string.dialog_ok) { _, _ -> viewModel.create(input.text.toString().trim()) }
             .setNegativeButton(R.string.dialog_cancel, null)
             .show()
-    }
-
-    private fun createSketch(name: String) {
-        try {
-            repository.createSketch(name)
-            refreshSketchList()
-        } catch (e: SketchNameInvalidException) {
-            toast(getString(R.string.error_invalid_sketch_name))
-        } catch (e: SketchAlreadyExistsException) {
-            toast(getString(R.string.error_sketch_exists, name))
-        }
     }
 
     private fun promptRenameSketch(sketch: Sketch) {
@@ -153,44 +157,17 @@ class SketchListActivity : AppCompatActivity() {
         AlertDialog.Builder(this)
             .setTitle(R.string.dialog_rename_title)
             .setView(input)
-            .setPositiveButton(R.string.dialog_ok) { _, _ ->
-                renameSketch(sketch, input.text.toString().trim())
-            }
+            .setPositiveButton(R.string.dialog_ok) { _, _ -> viewModel.rename(sketch, input.text.toString().trim()) }
             .setNegativeButton(R.string.dialog_cancel, null)
             .show()
-    }
-
-    private fun renameSketch(sketch: Sketch, newName: String) {
-        try {
-            repository.renameSketch(sketch, newName)
-            refreshSketchList()
-        } catch (e: SketchNameInvalidException) {
-            toast(getString(R.string.error_invalid_sketch_name))
-        } catch (e: SketchAlreadyExistsException) {
-            toast(getString(R.string.error_sketch_exists, newName))
-        } catch (e: SketchRenameFailedException) {
-            toast(getString(R.string.error_rename_failed, sketch.name))
-            refreshSketchList()
-        }
     }
 
     private fun confirmDeleteSketch(sketch: Sketch) {
         AlertDialog.Builder(this)
             .setTitle(R.string.dialog_delete_title)
             .setMessage(getString(R.string.dialog_delete_message, sketch.name))
-            .setPositiveButton(R.string.dialog_delete_confirm) { _, _ ->
-                try {
-                    repository.deleteSketch(sketch)
-                } catch (e: SketchDeleteFailedException) {
-                    toast(getString(R.string.error_delete_failed, sketch.name))
-                }
-                refreshSketchList()
-            }
+            .setPositiveButton(R.string.dialog_delete_confirm) { _, _ -> viewModel.delete(sketch) }
             .setNegativeButton(R.string.dialog_cancel, null)
             .show()
-    }
-
-    private fun toast(message: String) {
-        Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
     }
 }

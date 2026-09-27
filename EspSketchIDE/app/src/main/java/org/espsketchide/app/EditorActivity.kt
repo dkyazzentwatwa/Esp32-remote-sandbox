@@ -5,29 +5,46 @@ import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.EditText
-import android.widget.Toast
+import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
+import androidx.lifecycle.viewmodel.initializer
+import androidx.lifecycle.viewmodel.viewModelFactory
+import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.tabs.TabLayout
 import io.github.rosemoe.sora.langs.java.JavaLanguage
 import io.github.rosemoe.sora.widget.schemes.SchemeDarcula
 import io.github.rosemoe.sora.widget.schemes.SchemeGitHub
-import org.espsketchide.app.data.SketchAlreadyExistsException
-import org.espsketchide.app.data.DocumentFileStorage
-import org.espsketchide.app.data.SketchNameInvalidException
-import org.espsketchide.app.data.SketchRepository
+import kotlinx.coroutines.launch
 import org.espsketchide.app.databinding.ActivityEditorBinding
+import org.espsketchide.app.editor.EditorEvent
+import org.espsketchide.app.editor.EditorUiState
+import org.espsketchide.app.editor.EditorViewModel
 import org.espsketchide.app.model.Sketch
 import org.espsketchide.app.model.SketchFile
 
 class EditorActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityEditorBinding
-    private lateinit var repository: SketchRepository
     private lateinit var sketch: Sketch
 
-    private var openFiles: List<SketchFile> = emptyList()
-    private var currentFile: SketchFile? = null
+    private val viewModel: EditorViewModel by viewModels {
+        viewModelFactory {
+            initializer {
+                val app = application as EspSketchApp
+                EditorViewModel(app.repository, sketch, persistScope = app.appScope)
+            }
+        }
+    }
+
+    private var renderedFiles: List<SketchFile> = emptyList()
+    private var appliedVersion = 0
+
+    /** True while tabs are changed programmatically, so selection callbacks are ignored. */
+    private var renderingTabs = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -41,17 +58,23 @@ class EditorActivity : AppCompatActivity() {
             return
         }
         sketch = Sketch(sketchName, folderId)
-        repository = SketchRepository(DocumentFileStorage(this))
 
         setSupportActionBar(binding.toolbar)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         supportActionBar?.title = sketch.name
 
         setupEditor()
-        setupFileTabs()
+        attachTabListener()
+
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                launch { viewModel.state.collect(::render) }
+                launch { viewModel.events.collect(::handleEvent) }
+            }
+        }
 
         if (savedInstanceState == null) {
-            Toast.makeText(this, R.string.roadmap_notice, Toast.LENGTH_LONG).show()
+            Snackbar.make(binding.root, R.string.roadmap_notice, Snackbar.LENGTH_LONG).show()
         }
     }
 
@@ -63,40 +86,64 @@ class EditorActivity : AppCompatActivity() {
         binding.codeEditor.setTextSize(14f)
     }
 
-    private fun setupFileTabs() {
-        openFiles = repository.listFiles(sketch)
-        binding.fileTabLayout.removeAllTabs()
-        openFiles.forEach { file ->
-            binding.fileTabLayout.addTab(binding.fileTabLayout.newTab().setText(file.name))
-        }
+    /** Attached once; tab rebuilds are guarded by [renderingTabs]. */
+    private fun attachTabListener() {
         binding.fileTabLayout.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
             override fun onTabSelected(tab: TabLayout.Tab) {
-                saveCurrentFile()
-                loadFile(openFiles[tab.position])
+                if (renderingTabs) return
+                val file = renderedFiles.getOrNull(tab.position) ?: return
+                pushEditorText()
+                viewModel.selectFile(file)
             }
 
             override fun onTabUnselected(tab: TabLayout.Tab) = Unit
             override fun onTabReselected(tab: TabLayout.Tab) = Unit
         })
-        if (openFiles.isNotEmpty()) {
-            loadFile(openFiles.first())
+    }
+
+    private fun render(state: EditorUiState) {
+        if (state.files != renderedFiles) {
+            renderingTabs = true
+            binding.fileTabLayout.removeAllTabs()
+            state.files.forEach { file ->
+                binding.fileTabLayout.addTab(binding.fileTabLayout.newTab().setText(file.name), false)
+            }
+            renderedFiles = state.files
+            renderingTabs = false
+        }
+
+        val document = state.document ?: return
+        val index = renderedFiles.indexOfFirst { it.id == document.file.id }
+        if (index >= 0 && binding.fileTabLayout.selectedTabPosition != index) {
+            renderingTabs = true
+            binding.fileTabLayout.getTabAt(index)?.select()
+            renderingTabs = false
+        }
+        if (document.version != appliedVersion) {
+            binding.codeEditor.setText(document.text)
+            appliedVersion = document.version
         }
     }
 
-    private fun loadFile(file: SketchFile) {
-        currentFile = file
-        val content = repository.readFile(file)
-        binding.codeEditor.setText(content)
+    private fun handleEvent(event: EditorEvent) {
+        val message = when (event) {
+            is EditorEvent.Saved -> getString(R.string.saved_toast)
+            is EditorEvent.Error -> getString(event.message, event.arg)
+        }
+        Snackbar.make(binding.root, message, Snackbar.LENGTH_SHORT).show()
     }
 
-    private fun saveCurrentFile() {
-        val file = currentFile ?: return
-        repository.writeFile(file, binding.codeEditor.text.toString())
+    /** Hands the editor's text to the view model; skipped until a document has been shown. */
+    private fun pushEditorText() {
+        if (appliedVersion != 0) viewModel.updateText(binding.codeEditor.text.toString())
     }
 
     override fun onPause() {
         super.onPause()
-        saveCurrentFile()
+        if (::sketch.isInitialized) {
+            pushEditorText()
+            viewModel.saveInBackground()
+        }
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -111,8 +158,8 @@ class EditorActivity : AppCompatActivity() {
                 true
             }
             R.id.action_save -> {
-                saveCurrentFile()
-                Toast.makeText(this, R.string.saved_toast, Toast.LENGTH_SHORT).show()
+                pushEditorText()
+                viewModel.save()
                 true
             }
             R.id.action_add_file -> {
@@ -124,31 +171,16 @@ class EditorActivity : AppCompatActivity() {
     }
 
     private fun promptAddFile() {
-        val input = EditText(this)
+        val input = EditText(this).apply { hint = getString(R.string.hint_file_name) }
         AlertDialog.Builder(this)
             .setTitle(R.string.action_add_file)
             .setView(input)
             .setPositiveButton(R.string.dialog_ok) { _, _ ->
-                addFile(input.text.toString().trim())
+                pushEditorText()
+                viewModel.addFile(input.text.toString().trim())
             }
             .setNegativeButton(R.string.dialog_cancel, null)
             .show()
-    }
-
-    private fun addFile(fileName: String) {
-        try {
-            saveCurrentFile()
-            repository.addFile(sketch, fileName)
-            setupFileTabs()
-            val newIndex = openFiles.indexOfFirst { it.name == fileName }
-            if (newIndex >= 0) {
-                binding.fileTabLayout.getTabAt(newIndex)?.select()
-            }
-        } catch (e: SketchNameInvalidException) {
-            Toast.makeText(this, R.string.error_invalid_sketch_name, Toast.LENGTH_SHORT).show()
-        } catch (e: SketchAlreadyExistsException) {
-            Toast.makeText(this, getString(R.string.error_sketch_exists, fileName), Toast.LENGTH_SHORT).show()
-        }
     }
 
     companion object {
