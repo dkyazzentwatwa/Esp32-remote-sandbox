@@ -7,7 +7,7 @@
 /captures/
 .externalNativeBuildFolder
 .cxx/
-app/build/
+build/
 *.apk
 *.ap_
 *.dex
