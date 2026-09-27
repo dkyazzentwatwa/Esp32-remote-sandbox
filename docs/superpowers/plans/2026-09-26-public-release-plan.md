@@ -65,10 +65,9 @@ Output: `docs/superpowers/spikes/p0-results.md` with measured numbers and a GO/N
 Code from P0 is throwaway unless a later task says "promote".
 
 ### P0.1 Exec mechanism with a trivial binary (cloud + device)
-- [ ] In a throwaway module `spike/execprobe/` (Android app, targetSdk 36), ship a static
-      musl `hello` and a static `busybox` as `jniLibs/arm64-v8a/libhello.so`,
-      `libbusybox.so` (+ `armeabi-v7a`). Build them in the container with a musl cross
-      compiler (musl-cross-make, cached) — verify with `qemu-aarch64-static` (`apt-get install qemu-user-static`).
+- [ ] In a throwaway module `spike/execprobe/` (Android app, targetSdk 36), ship NDK-built
+      `hello` and `hellodl` (which `dlopen`s a `libplugin.so` from `nativeLibraryDir`, as gcc
+      does with `xtensa_esp32.so`) as `jniLibs/<abi>/libhello.so` etc.
 - [ ] `android { packaging { jniLibs { useLegacyPackaging = true } } }` so libs are extracted.
 - [ ] At startup: create `filesDir/tc/bin/hello` → symlink to `nativeLibraryDir/libhello.so`;
       run both the direct path and the symlink via `ProcessBuilder`; also run a child that
@@ -77,21 +76,24 @@ Code from P0 is throwaway unless a later task says "promote".
 - [ ] Set `TMPDIR=cacheDir` (Android has no `/tmp`; gcc needs it).
 - **Pass:** all three exec paths work on both test phones.
 
-### P0.2 Build the static-musl xtensa toolchain (cloud / CI)
-- [ ] `toolchain/build.sh`: build a musl cross compiler for `aarch64-linux-musl` and
-      `armv7a-linux-musleabihf` (musl-cross-make, pinned commit), then Espressif
-      crosstool-NG (tag matching `esp-14.2.0_20260121`) sample `xtensa-esp-elf` as a
-      **canadian cross** (`CT_CANADIAN=y`, host = musl triplet, `CT_STATIC_TOOLCHAIN=y`,
-      LTO/gdb/docs off).
-- [ ] Output tarball: `bin/` + `libexec/` host files only, stripped; plus a separate
-      `sysroot` tarball of target files (or reuse Espressif's upstream target files — they
-      are architecture-independent data).
-- [ ] Smoke test in container: `qemu-aarch64-static ./xtensa-esp-elf-g++ --version` and
-      compile a one-line `.c` to `.o` with `-mlongcalls`.
-- [ ] Record sizes: per-binary, total uncompressed, total `xz`/zip compressed.
-- **Pass:** binaries run under qemu; total compressed host set ≤ 35 MB per ABI.
-- If canadian musl fails after two focused attempts: try NDK (`--host=aarch64-linux-android26`)
-  and note why.
+### P0.2 Build the Android-hosted xtensa toolchain (cloud / CI)
+*Revised 2026-09-27:* Espressif's toolchain loads the chip config as a `dlopen` plugin
+(`-mdynconfig=xtensa_esp32.so`), so fully static musl binaries can't work. Build with the NDK.
+- [ ] Sources pinned to Espressif crosstool-NG `esp-14.2.0_20260121`: `espressif/gcc`
+      `esp-14.2.0_20260121`, `espressif/binutils-gdb` `esp-2.43.1_20260121`,
+      `xtensa-dynconfig` `c545876`, `xtensa-overlays` `dd1cf19`.
+- [ ] `toolchain/build-android.sh <abi>`: gmp/mpfr/mpc for the Android host; binutils
+      (`all-binutils all-gas all-ld`) and gcc (`all-gcc`) with
+      `--build=x86_64-linux-gnu --host=<ndk triple>26 --target=xtensa-esp-elf` and Espressif's
+      gcc configure options (from `xtensa-esp-elf-gcc -v`); the `xtensa_esp32.so` plugin from
+      xtensa-dynconfig + overlays with the NDK compiler. No LTO plugin, no gdb, no NLS.
+- [ ] Output: `bin/` + `libexec/` + plugins, stripped. Target files are reused from
+      Espressif's release (same sources and options).
+- [ ] Smoke test: the arm64 binaries can't run in the x86 container (bionic), so check with
+      `file`/`readelf` here (interpreter `/system/bin/linker64`, no missing `NEEDED` libs
+      beyond libc/libm/libdl/liblog) and run for real in P0.4 or on a CI arm64 Android emulator.
+- [ ] Record sizes: per-binary, total uncompressed, total compressed.
+- **Pass:** complete set builds for arm64-v8a; compressed host set ≤ 35 MB per ABI.
 
 ### P0.3 Hand-made ESP32 pack + desktop reference build (cloud)
 - [ ] `tools/pack/make_pack.py` v0: download arduino-esp32 3.3.12 core zip + `esp32-libs`

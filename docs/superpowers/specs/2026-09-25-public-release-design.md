@@ -47,8 +47,21 @@ Therefore: **host executables ship in the APK; everything else is downloadable d
 
 - Separate repo `espsketchide-toolchains`: crosstool-NG canadian-cross build of Espressif's
   `xtensa-esp-elf` gcc 14.2.0 for hosts `aarch64` and `armv7a`.
-- Primary: **fully static musl** binaries (no dependence on bionic). Fallback: NDK/bionic
-  build. If musl's allocator makes cc1plus too slow, link mimalloc.
+- **Primary: Android NDK (bionic) dynamic build**, `--host=aarch64-linux-android26` /
+  `armv7a-linux-androideabi26`. Binaries use `/system/bin/linker64` (present on every device)
+  as their ELF interpreter, so they run from `nativeLibraryDir` like Termux's tools.
+  *Changed 2026-09-27 (P0 finding):* Espressif's unified `xtensa-esp-elf` toolchain has no
+  chip configuration compiled in; gcc, as and ld load it at run time from a plugin
+  (`-mdynconfig=xtensa_esp32.so` / `XTENSA_GNU_CONFIG`) with `dlopen`. Fully static musl
+  binaries cannot `dlopen`, so static musl is only possible by diverging from Espressif's
+  build (static per-chip config), which we reject. The plugins (`xtensa_esp32.so`, later
+  `_esp32s3.so`) ship as `libxtensa_esp32.so` in `jniLibs`.
+- The `xtensa-esp32-elf-*` names are thin wrappers that add `-mdynconfig=xtensa_esp32.so`;
+  the build engine passes that flag (and sets `XTENSA_GNU_CONFIG` for `as`/`ld`) itself
+  instead of shipping the wrappers.
+- Only host programs are built (`make all-gcc`, `all-binutils all-gas all-ld`); target
+  libraries come from Espressif's release, which was built from the same sources and
+  configure options (read from `xtensa-esp-elf-gcc -v`).
 - APK contents: `gcc`, `g++`, `cc1`, `cc1plus`, `collect2`, `as`, `ld`, `ar`, `objcopy`, `size`,
   renamed `lib<name>.so` under `jniLibs/<abi>/`. `extractNativeLibs=true` / `useLegacyPackaging`.
   Estimated 20–25 MB compressed per ABI (to verify in CI).
