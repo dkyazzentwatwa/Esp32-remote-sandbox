@@ -25,6 +25,7 @@
     <string name="error_list_files_failed">Couldn\'t list the sketch\'s files.</string>
     <string name="error_read_failed">Couldn\'t open \"%1$s\".</string>
     <string name="error_save_failed">Couldn\'t save \"%1$s\". Your changes are still in the editor.</string>
+    <string name="error_highlighting_failed">Syntax highlighting is unavailable; editing still works.</string>
     <string name="hint_file_name">e.g. pins.h</string>
     <string name="error_no_storage_access">Grant access to a folder to store your sketches.</string>
 

@@ -16,14 +16,16 @@ import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.tabs.TabLayout
-import io.github.rosemoe.sora.langs.java.JavaLanguage
-import io.github.rosemoe.sora.widget.schemes.SchemeDarcula
-import io.github.rosemoe.sora.widget.schemes.SchemeGitHub
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.espsketchide.app.databinding.ActivityEditorBinding
 import org.espsketchide.app.editor.EditorEvent
 import org.espsketchide.app.editor.EditorUiState
 import org.espsketchide.app.editor.EditorViewModel
+import org.espsketchide.app.editor.Highlighting
+import org.espsketchide.app.editor.SourceKind
+import org.espsketchide.app.editor.sourceKindFor
 import org.espsketchide.app.model.Sketch
 import org.espsketchide.app.ui.Insets
 import org.espsketchide.app.model.SketchFile
@@ -44,6 +46,10 @@ class EditorActivity : AppCompatActivity() {
 
     private var renderedFiles: List<SketchFile> = emptyList()
     private var appliedVersion = 0
+
+    private var highlightingReady = false
+    private var appliedKind: SourceKind? = null
+    private var currentKind = SourceKind.CPP
 
     /** True while tabs are changed programmatically, so selection callbacks are ignored. */
     private var renderingTabs = false
@@ -84,11 +90,26 @@ class EditorActivity : AppCompatActivity() {
     }
 
     private fun setupEditor() {
-        binding.codeEditor.setEditorLanguage(JavaLanguage())
+        binding.codeEditor.setTextSize(14f)
         val isDarkMode = (resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK) ==
             Configuration.UI_MODE_NIGHT_YES
-        binding.codeEditor.colorScheme = if (isDarkMode) SchemeDarcula() else SchemeGitHub()
-        binding.codeEditor.setTextSize(14f)
+        lifecycleScope.launch {
+            try {
+                withContext(Dispatchers.Default) { Highlighting.load(applicationContext) }
+                binding.codeEditor.colorScheme = Highlighting.colorScheme(isDarkMode)
+                highlightingReady = true
+                applyLanguage()
+            } catch (e: Exception) {
+                // Highlighting is a nicety; editing must keep working without it.
+                Snackbar.make(binding.root, R.string.error_highlighting_failed, Snackbar.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    private fun applyLanguage() {
+        if (!highlightingReady || appliedKind == currentKind) return
+        binding.codeEditor.setEditorLanguage(Highlighting.language(currentKind))
+        appliedKind = currentKind
     }
 
     /** Attached once; tab rebuilds are guarded by [renderingTabs]. */
@@ -125,6 +146,8 @@ class EditorActivity : AppCompatActivity() {
             renderingTabs = false
         }
         if (document.version != appliedVersion) {
+            currentKind = sourceKindFor(document.file.name)
+            applyLanguage()
             binding.codeEditor.setText(document.text)
             appliedVersion = document.version
         }

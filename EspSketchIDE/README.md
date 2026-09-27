@@ -21,14 +21,15 @@ This is the first milestone of an incremental build-out. What works today:
 
 ### About the syntax highlighting
 
-The editor currently reuses [sora-editor](https://github.com/Rosemoe/sora-editor)'s
-bundled `language-java` tokenizer rather than a purpose-built C/C++/Arduino
-grammar. Since C/C++ and Java share the same brace/statement/comment/string
-syntax, braces, comments, strings, numbers, and most common keywords
-(`if`, `else`, `for`, `while`, `return`, `void`, `int`, …) highlight
-correctly. Arduino/C-specific things like `#include` preprocessor lines and
-fixed-width types (`uint8_t`, etc.) are not specially colored yet — see
-the roadmap.
+`.ino`, `.h`, `.hpp`, `.c`, `.cpp` and `.cc` files are highlighted with the
+TextMate C++ grammar that VS Code ships (from
+[jeff-hykin/better-cpp-syntax](https://github.com/jeff-hykin/better-cpp-syntax),
+MIT; see `app/src/main/assets/textmate/cpp/NOTICE.md`), rendered by
+[sora-editor](https://github.com/Rosemoe/sora-editor)'s TextMate module with
+the app's own light and dark themes. Preprocessor lines, fixed-width types
+such as `uint8_t`, function definitions and calls are all coloured. Arduino
+names like `pinMode` or `OUTPUT` are ordinary identifiers to a C++ grammar, so
+they are not specially coloured. `.txt` files are shown without highlighting.
 
 ## Roadmap
 

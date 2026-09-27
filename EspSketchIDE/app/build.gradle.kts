@@ -48,12 +48,10 @@ dependencies {
     implementation("androidx.fragment:fragment-ktx:1.9.1")
     implementation("androidx.documentfile:documentfile:1.1.0")
 
-    // Code editor with syntax highlighting (M2) — MIT licensed, actively maintained.
-    // language-java's tokenizer/highlighter is reused as a stand-in for C/C++/Arduino
-    // syntax (braces, comments, strings, numbers and most keywords are shared with C);
-    // see EditorActivity for details and the README roadmap for a dedicated grammar.
+    // Code editor (MIT). C/C++/Arduino highlighting uses the TextMate module with VS Code's C++
+    // grammar and our own light/dark themes, bundled under assets/textmate.
     implementation("io.github.Rosemoe.sora-editor:editor:0.23.6")
-    implementation("io.github.Rosemoe.sora-editor:language-java:0.23.6")
+    implementation("io.github.Rosemoe.sora-editor:language-textmate:0.23.6")
 
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.11.0")
 

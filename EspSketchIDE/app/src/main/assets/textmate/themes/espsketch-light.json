@@ -1,0 +1,121 @@
+{
+  "name": "EspSketch Light",
+  "type": "light",
+  "colors": {
+    "editor.background": "#FFFFFF",
+    "editor.foreground": "#1F2328",
+    "editorLineNumber.foreground": "#8C959F",
+    "editorLineNumber.activeForeground": "#1F2328",
+    "editor.lineHighlightBackground": "#F2F6FA",
+    "editor.selectionBackground": "#B6D7FF",
+    "editorCursor.foreground": "#005C99",
+    "editorIndentGuide.background": "#E4E8EC"
+  },
+  "tokenColors": [
+    {
+      "scope": "comment",
+      "settings": {
+        "foreground": "#6E7781",
+        "fontStyle": "italic"
+      }
+    },
+    {
+      "scope": [
+        "string",
+        "string.quoted",
+        "punctuation.definition.string"
+      ],
+      "settings": {
+        "foreground": "#0A7F3F"
+      }
+    },
+    {
+      "scope": [
+        "constant.numeric",
+        "constant.character.escape"
+      ],
+      "settings": {
+        "foreground": "#0550AE"
+      }
+    },
+    {
+      "scope": [
+        "constant.language",
+        "variable.language.this"
+      ],
+      "settings": {
+        "foreground": "#8250DF"
+      }
+    },
+    {
+      "scope": [
+        "keyword.control",
+        "keyword.other",
+        "storage.modifier",
+        "keyword.operator.new",
+        "keyword.operator.delete",
+        "keyword.operator.sizeof",
+        "keyword.operator.cast"
+      ],
+      "settings": {
+        "foreground": "#8250DF",
+        "fontStyle": "bold"
+      }
+    },
+    {
+      "scope": [
+        "storage.type",
+        "support.type",
+        "entity.name.type",
+        "storage.type.built-in"
+      ],
+      "settings": {
+        "foreground": "#0969DA"
+      }
+    },
+    {
+      "scope": [
+        "keyword.control.directive",
+        "meta.preprocessor",
+        "punctuation.definition.directive",
+        "entity.name.function.preprocessor"
+      ],
+      "settings": {
+        "foreground": "#9A6700"
+      }
+    },
+    {
+      "scope": [
+        "meta.preprocessor.include string",
+        "string.quoted.other.lt-gt.include"
+      ],
+      "settings": {
+        "foreground": "#0A7F3F"
+      }
+    },
+    {
+      "scope": [
+        "entity.name.function",
+        "support.function"
+      ],
+      "settings": {
+        "foreground": "#953800"
+      }
+    },
+    {
+      "scope": [
+        "variable.other.macro",
+        "entity.name.other.preprocessor.macro"
+      ],
+      "settings": {
+        "foreground": "#9A6700"
+      }
+    },
+    {
+      "scope": "invalid",
+      "settings": {
+        "foreground": "#CF222E"
+      }
+    }
+  ]
+}
