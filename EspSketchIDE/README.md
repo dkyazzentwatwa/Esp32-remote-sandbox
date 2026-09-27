@@ -6,18 +6,34 @@ sketches on your phone or tablet — inspired by
 but independently written and MIT-licensed. It is **not** affiliated with or
 a republish of ArduinoDroid.
 
-## Status: early scaffold (v0.1.0-alpha)
+## Status: editor alpha (v0.1.0-alpha)
 
-This is the first milestone of an incremental build-out. What works today:
+EspSketchIDE is being built so that students (starting with the Circuit Hub
+community) can write, compile and upload Arduino sketches **entirely from an
+Android phone, offline**. The design and plan are in
+[`../docs/superpowers/`](../docs/superpowers/). What works today:
 
-- ✅ Sketch management: create, rename, delete sketches (folders backed by
-  the Storage Access Framework, following the Arduino convention that a
-  sketch folder's name matches its primary `.ino` file).
-- ✅ Multi-file editor with tabs per sketch, syntax highlighting, and
-  save-on-switch/save-on-exit.
-- 🚧 **Compiling and uploading sketches is not implemented yet.** See
-  Roadmap below — this is deliberately not stubbed in as a fake button,
-  so the app only claims to do what it actually does.
+- ✅ Sketch management: create, rename, delete and copy-from-example sketches
+  in a folder you choose (Storage Access Framework, Arduino folder rules).
+- ✅ Multi-file editor: a tab per file, C/C++ highlighting, undo/redo, a
+  symbol bar for `{ } ( ) ; < > # "` and friends, adjustable text size, and
+  autosave.
+- ✅ Eight example sketches (Blink through WiFi and Bluetooth) that are checked
+  in CI to compile for the ESP32.
+- 🚧 **Compiling and uploading are not implemented yet.** They are not stubbed
+  in as fake buttons, so the app only claims what it actually does.
+
+### Supported devices
+
+| | |
+|---|---|
+| Phones | Android 8.0 (API 26) or newer, 64-bit or 32-bit ARM. Compiling will need a one-time ESP32 board-pack download (estimated 80–150 MB; to be measured). |
+| Boards (first) | ESP32 "classic" dev boards (ESP32 DevKitC and clones) with a CP210x, CH340/CH9102 or FTDI USB chip |
+| Boards (later) | ESP32-S3/C3/C6, ESP8266, Arduino Uno/Nano |
+| Not supported | **iPhone/iPad**: iOS doesn't allow apps to run a compiler or talk to USB-serial boards. |
+
+For uploading you'll need a **USB-OTG adapter** and a **data** cable (many
+cheap cables only carry power).
 
 ### About the syntax highlighting
 
@@ -33,31 +49,38 @@ they are not specially coloured. `.txt` files are shown without highlighting.
 
 ## Roadmap
 
+Done:
+
 - [x] M0 — Project scaffold, MIT license
 - [x] M1 — Sketch management (create/open/rename/delete)
 - [x] M2 — Multi-file editor with syntax highlighting
-- [ ] M3 — USB serial monitor/plotter (via
-      [usb-serial-for-android](https://github.com/mik3y/usb-serial-for-android))
-- [ ] M4 — Toolchain research spike: how to package an Android-hosted
-      `xtensa-esp32-elf`/`xtensa-esp8266-elf` GCC toolchain (Espressif does
-      not publish one; this needs either a crosstool-NG cross-build or a
-      located prebuilt), shipped as executables under `jniLibs/` so
-      Android will let the app execute them
-- [ ] M5 — On-device compilation
-- [ ] M6 — Upload over USB (esptool protocol) and WiFi OTA
-- [ ] M7 — Library/board manager compatible with Arduino's package index
-      format
-- [ ] M8 — Themes, example sketches, settings, F-Droid/GitHub Releases
+
+Toward v0.1 (see the [plan](../docs/superpowers/plans/2026-09-26-public-release-plan.md)):
+
+- [ ] P0 — Feasibility spike: run an Android build of the ESP32 GCC toolchain
+      from the APK, compile Blink on a phone, flash it over USB
+- [x] P1 — Editor fixes and student UX (symbol bar, examples, undo/redo, text
+      size, C++ highlighting, targetSdk 36, CI, signed releases) — device
+      testing still to do
+- [ ] P2 — Toolchain and ESP32 board-pack build pipelines
+- [ ] P3 — On-device build engine (`.ino` preprocessing, libraries, recipes)
+- [ ] P4 — Upload over USB (esptool ROM protocol) and serial monitor
+- [ ] P5 — Library manager (Arduino library index, `.zip` install)
+- [ ] P6 — v0.1 beta with a Circuit Hub class
+
+After v0.1: ESP32-S3/C3/C6, ESP8266, AVR Uno/Nano; Play Store and F-Droid.
 
 ## Building
 
-Requires JDK 17+ and the Android SDK (compileSdk 34, minSdk 26).
+Requires JDK 17+ and the Android SDK (compileSdk 37, targetSdk 36, minSdk 26).
 
 ```bash
-./gradlew :app:assembleDebug
+./gradlew :app:testDebugUnitTest   # unit tests
+./gradlew :app:assembleDebug       # APK at app/build/outputs/apk/debug/app-debug.apk
 ```
 
-The resulting APK is at `app/build/outputs/apk/debug/app-debug.apk`.
+See [CONTRIBUTING.md](CONTRIBUTING.md) for more, and [PRIVACY.md](PRIVACY.md)
+for what the app does with your data (nothing leaves your phone).
 
 ## License
 

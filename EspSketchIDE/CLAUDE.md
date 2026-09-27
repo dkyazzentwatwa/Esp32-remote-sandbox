@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 EspSketchIDE is an MIT-licensed Android app for editing ESP32/ESP8266 Arduino sketches on a phone or tablet. It is an independent project inspired by ArduinoDroid, not a fork or republish of it. It lives in a subdirectory of the `Esp32-remote-sandbox` git repo; the git root is the parent directory, and `../Esp32WhatsappServer` is an unrelated sibling sketch.
 
-Status is early alpha (M0–M2 of the roadmap in `README.md`): sketch management and a multi-file editor. **Compile and upload are not implemented.** On purpose, the app has no stub or fake buttons for them; it shows a `roadmap_notice` toast instead. Keep it that way: never add UI that claims a capability the app doesn't have. When you finish a milestone, update the README roadmap checkboxes.
+Status is editor alpha: sketch management, a multi-file editor and bundled examples. The public-release design is `../docs/superpowers/specs/2026-09-25-public-release-design.md` and the task plan is `../docs/superpowers/plans/2026-09-26-public-release-plan.md` (phases P0–P6; P1 is done apart from device testing). **Compile and upload are not implemented.** On purpose, the app has no stub or fake buttons for them; it shows a `roadmap_notice` snackbar instead. Keep it that way: never add UI that claims a capability the app doesn't have. When you finish a milestone, update the README roadmap checkboxes.
 
 ## Build
 
@@ -22,15 +22,24 @@ JVM unit tests live in `app/src/test` (JUnit4 + Truth + kotlinx-coroutines-test)
 
 ## Architecture
 
-It is a single-module app (`:app`, package `org.espsketchide.app`) built on plain Activities with ViewBinding. There are no ViewModels, DI, or coroutines yet, although the lifecycle/viewmodel dependencies are present.
+Single module (`:app`, package `org.espsketchide.app`): Activities with ViewBinding, ViewModels with coroutines, no DI framework. `EspSketchApp` (the `Application`) owns the shared `DocumentFileStorage`, `SketchRepository` and an `appScope` for work that must outlive a screen.
 
-- **Storage runs entirely through the Storage Access Framework.** On first launch the user picks a root folder with `OpenDocumentTree`. `SketchRepository` persists the tree URI in SharedPreferences (`esp_sketch_ide` / `sketches_root_uri`) and takes a persistable read/write grant. `rootUri()` returns null once that grant is revoked. All file access goes through `DocumentFile` and `ContentResolver` streams. Never use `java.io.File` paths.
-- **Sketch model follows Arduino conventions.** A sketch is a directory under the root whose name matches its primary `<name>.ino`. Sketch names must match `^[A-Za-z][A-Za-z0-9_]*$`. Renaming a sketch renames both the folder and the primary `.ino`. Only the extensions in `EDITABLE_EXTENSIONS` (`ino, h, hpp, c, cpp, cc, txt`) are listed or editable, and the primary `.ino` always sorts first.
-- **Screen flow:** `SketchListActivity` (launcher; list/create/rename/delete, change root) → `EditorActivity`. The sketch is passed as two extras, `EXTRA_SKETCH_NAME` and `EXTRA_SKETCH_FOLDER_URI`, rather than a Parcelable.
-- **Editor:** `EditorActivity` shows one TabLayout tab per sketch file and a single shared sora-editor `CodeEditor`. It saves the current file when you switch tabs, in `onPause`, and from the Save menu action. There is no dirty tracking.
-- **Syntax highlighting:** sora-editor's `language-java` (`JavaLanguage`) stands in for C/C++. The editor uses the Darcula or GitHub scheme depending on night mode. Preprocessor lines and `uint8_t`-style types are not highlighted. A real C/Arduino grammar is a roadmap item, so keep the README's "About the syntax highlighting" section accurate if this changes.
-- File I/O currently runs on the main thread.
+- **Storage goes through the `SketchStorage` interface** (`data/`). `DocumentFileStorage` implements it with the Storage Access Framework: on first launch the user picks a root folder with `OpenDocumentTree`; the tree URI is persisted in SharedPreferences (`esp_sketch_ide` / `sketches_root_uri`) with a persistable read/write grant, and `root()` returns null once the grant is revoked. Node ids are document URI strings; models (`Sketch.folderId`, `SketchFile.id`) carry them as `String`, not `Uri`, so repository logic is JVM-testable. Never use `java.io.File` paths for sketches.
+- **SAF quirks the code relies on** (and `InMemoryStorage` in tests mimics): ids are path-based, so renaming a folder invalidates ids of its children (hence `renameSketch` renames the `.ino` first, then the folder, with rollback); and providers append the MIME type's extension, so non-`.ino` files are created as `application/octet-stream` (`mimeTypeFor`).
+- **Sketch rules follow Arduino.** A sketch is a folder under the root that contains `<folder>.ino`; other folders (e.g. `libraries/`) are not listed. Names match `^[A-Za-z][A-Za-z0-9_]*$`. Editable files: `ino, h, hpp, c, cpp, cc, txt`, one dot, primary `.ino` first. `createFromFiles` copies an example, picking `Name_2`, `Name_3`… if taken.
+- **Screens:** `SketchListActivity` + `sketches/SketchListViewModel` (list/create/rename/delete, change root, "New from example") → `EditorActivity` + `editor/EditorViewModel`, passed `EXTRA_SKETCH_NAME` and `EXTRA_SKETCH_FOLDER_ID`. Errors surface as snackbars via the ViewModels' event channels; storage never runs on the main thread.
+- **Editor:** one tab per file and a shared sora-editor `CodeEditor`. `EditorViewModel` keeps per-file buffers and what was last persisted, writes only changed files (on tab switch, Save, and `onPause` via `appScope`), and exposes `OpenDocument(file, text, version)`; the activity replaces editor text only when `version` changes, and `updateText` keeps `text` current so rotation keeps unsaved edits. The tab listener is attached once and ignored while tabs are rebuilt.
+- **Highlighting:** `editor/Highlighting` loads VS Code's TextMate C++ grammar (`assets/textmate/`, MIT, see `NOTICE.md`) off the main thread with our own light/dark themes; `.txt` is plain. If loading fails, editing continues without colours.
+- **Student UX:** `SymbolInputView` symbol bar above the keyboard, undo/redo menu actions, pinch and menu text size (10–28 sp, `EditorPrefs`).
+- **Examples:** `assets/examples/<NN.Category>/<Name>/<Name>.ino`, read by `examples/AssetExampleSource`. CI compiles each with arduino-cli for `esp32:esp32:esp32`.
+- **Edge-to-edge** is enforced at targetSdk 35+: `ui/Insets` pads the app bar under the status bar, makes the editor follow the keyboard (adjustResize no longer does), and keeps the list/FAB clear of the navigation bar.
 
-## Roadmap context for future work
+## CI and releases
 
-The next milestones are M3 (USB serial monitor via `usb-serial-for-android`; the manifest already declares the optional `android.hardware.usb.host` feature), M4 (a spike on packaging an Android-hosted xtensa GCC toolchain as executables under `jniLibs/` so Android allows them to run), M5 (on-device compile), M6 (esptool USB upload + OTA), and M7 (library/board manager compatible with Arduino's package index). Jitpack is already listed in `settings.gradle.kts` repositories.
+`../.github/workflows/espsketchide.yml` runs unit tests, lint, a debug build, and the examples compile job. `espsketchide-release.yml` builds a signed APK into a draft GitHub Release on tags `espsketchide-v*`; signing reads `RELEASE_KEYSTORE_PATH`, `RELEASE_KEYSTORE_PASSWORD`, `RELEASE_KEY_ALIAS`, `RELEASE_KEY_PASSWORD` from the environment (unsigned without them).
+
+## Conventions
+
+- Test first; keep logic out of Activities. Honest UI (see above).
+- Clean-room: arduino-cli (GPL-3.0) and esptool (GPL-2.0) are behaviour references only; don't copy their code or test data.
+- GitHub repos outside this session's scope are blocked from the cloud container; arduino-cli comes from `downloads.arduino.cc`.
