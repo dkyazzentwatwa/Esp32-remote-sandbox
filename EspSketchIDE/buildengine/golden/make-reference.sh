@@ -10,7 +10,7 @@ ESP32_CORE="${ESP32_CORE:-3.3.12}"
 ARDUINO15="$("$CLI" config get directories.data)"
 HERE="$(cd "$(dirname "$0")/../.." && pwd)"
 SKETCH="$OUT/sketches/Blink"
-mkdir -p "$OUT/sketches"
+mkdir -p "$OUT/sketches" "$OUT/builds"
 rm -rf "$SKETCH" && cp -r "$HERE/app/src/main/assets/examples/01.Basics/Blink" "$SKETCH"
 
 {
@@ -24,4 +24,15 @@ rm -rf "$SKETCH" && cp -r "$HERE/app/src/main/assets/examples/01.Basics/Blink" "
 "$CLI" compile --fqbn esp32:esp32:esp32:PartitionScheme=huge_app,DebugLevel=info --show-properties \
   --build-path "$OUT/build" "$SKETCH" > "$OUT/show-properties-menus.txt"
 "$CLI" compile -v --clean --fqbn esp32:esp32:esp32 --build-path "$OUT/build" "$SKETCH" > "$OUT/compile-verbose.txt"
+
+# Every bundled example, each with its own build dir and verbose log.
+for dir in "$HERE"/app/src/main/assets/examples/*/*/; do
+  name="$(basename "$dir")"
+  rm -rf "$OUT/sketches/$name" && cp -r "$dir" "$OUT/sketches/$name"
+  [ "$name" = Blink ] && continue
+  "$CLI" compile -v --clean --fqbn esp32:esp32:esp32 --build-path "$OUT/builds/$name" "$OUT/sketches/$name" \
+    > "$OUT/builds/$name.verbose.txt"
+done
+mkdir -p "$OUT/builds" && rm -rf "$OUT/builds/Blink" && ln -s "$OUT/build" "$OUT/builds/Blink"
+cp "$OUT/compile-verbose.txt" "$OUT/builds/Blink.verbose.txt"
 echo "reference written to $OUT"
