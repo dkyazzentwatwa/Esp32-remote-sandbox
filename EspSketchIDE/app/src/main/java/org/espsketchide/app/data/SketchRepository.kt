@@ -8,6 +8,15 @@ private val EDITABLE_EXTENSIONS = setOf("ino", "h", "hpp", "c", "cpp", "cc", "tx
 
 class SketchNameInvalidException : Exception()
 class SketchAlreadyExistsException : Exception()
+class SketchRenameFailedException : Exception()
+class SketchDeleteFailedException : Exception()
+
+/**
+ * `application/octet-stream` for everything but .ino: SAF providers append the MIME type's
+ * extension when it doesn't match the name, so `text/plain` turned `pins.h` into `pins.h.txt`.
+ */
+internal fun mimeTypeFor(fileName: String): String =
+    if (fileName.endsWith(".ino")) "text/x-arduino" else "application/octet-stream"
 
 /**
  * Reads and writes sketches as folders under the user-chosen sketchbook root, following the
@@ -22,7 +31,7 @@ class SketchRepository(private val storage: SketchStorage) {
     fun listSketches(): List<Sketch> {
         val root = storage.root() ?: return emptyList()
         return storage.children(root)
-            .filter { it.isDirectory }
+            .filter { it.isDirectory && storage.find(it, "${it.name}.ino")?.isDirectory == false }
             .sortedBy { it.name.lowercase() }
             .map { Sketch(it.name, it.id) }
     }
@@ -35,26 +44,38 @@ class SketchRepository(private val storage: SketchStorage) {
 
         val folder = storage.createDirectory(root, name)
             ?: throw IllegalStateException("Could not create sketch folder")
-        val inoFile = storage.createFile(folder, "text/x-arduino", "$name.ino")
+        val inoFile = storage.createFile(folder, mimeTypeFor("$name.ino"), "$name.ino")
             ?: throw IllegalStateException("Could not create $name.ino")
         storage.write(inoFile, content)
         return Sketch(name, folder.id)
     }
 
-    @Throws(SketchNameInvalidException::class, SketchAlreadyExistsException::class)
+    @Throws(
+        SketchNameInvalidException::class,
+        SketchAlreadyExistsException::class,
+        SketchRenameFailedException::class
+    )
     fun renameSketch(sketch: Sketch, newName: String) {
         if (!isValidSketchName(newName)) throw SketchNameInvalidException()
         val root = storage.root() ?: throw IllegalStateException("No sketches root set")
         if (storage.find(root, newName) != null) throw SketchAlreadyExistsException()
 
+        // Rename the .ino first: renaming the folder first changes the ids of everything in it,
+        // so the .ino handle would be stale and keep its old name.
         val folder = folderNode(sketch)
         val primaryIno = storage.find(folder, sketch.primaryFileName)
-        storage.rename(folder, newName)
-        primaryIno?.let { storage.rename(it, "$newName.ino") }
+        val renamedIno = primaryIno?.let {
+            storage.rename(it, "$newName.ino") ?: throw SketchRenameFailedException()
+        }
+        if (storage.rename(folder, newName) == null) {
+            renamedIno?.let { storage.rename(it, sketch.primaryFileName) }
+            throw SketchRenameFailedException()
+        }
     }
 
+    @Throws(SketchDeleteFailedException::class)
     fun deleteSketch(sketch: Sketch) {
-        storage.delete(folderNode(sketch))
+        if (!storage.delete(folderNode(sketch))) throw SketchDeleteFailedException()
     }
 
     fun listFiles(sketch: Sketch): List<SketchFile> {
@@ -77,7 +98,7 @@ class SketchRepository(private val storage: SketchStorage) {
         }
         if (storage.find(folder, fileName) != null) throw SketchAlreadyExistsException()
 
-        val file = storage.createFile(folder, "text/plain", fileName)
+        val file = storage.createFile(folder, mimeTypeFor(fileName), fileName)
             ?: throw IllegalStateException("Could not create $fileName")
         return SketchFile(fileName, file.id)
     }

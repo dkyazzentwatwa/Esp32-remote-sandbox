@@ -14,8 +14,10 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import org.espsketchide.app.data.SketchAlreadyExistsException
+import org.espsketchide.app.data.SketchDeleteFailedException
 import org.espsketchide.app.data.DocumentFileStorage
 import org.espsketchide.app.data.SketchNameInvalidException
+import org.espsketchide.app.data.SketchRenameFailedException
 import org.espsketchide.app.data.SketchRepository
 import org.espsketchide.app.databinding.ActivitySketchListBinding
 import org.espsketchide.app.model.Sketch
@@ -166,6 +168,9 @@ class SketchListActivity : AppCompatActivity() {
             toast(getString(R.string.error_invalid_sketch_name))
         } catch (e: SketchAlreadyExistsException) {
             toast(getString(R.string.error_sketch_exists, newName))
+        } catch (e: SketchRenameFailedException) {
+            toast(getString(R.string.error_rename_failed, sketch.name))
+            refreshSketchList()
         }
     }
 
@@ -174,7 +179,11 @@ class SketchListActivity : AppCompatActivity() {
             .setTitle(R.string.dialog_delete_title)
             .setMessage(getString(R.string.dialog_delete_message, sketch.name))
             .setPositiveButton(R.string.dialog_delete_confirm) { _, _ ->
-                repository.deleteSketch(sketch)
+                try {
+                    repository.deleteSketch(sketch)
+                } catch (e: SketchDeleteFailedException) {
+                    toast(getString(R.string.error_delete_failed, sketch.name))
+                }
                 refreshSketchList()
             }
             .setNegativeButton(R.string.dialog_cancel, null)

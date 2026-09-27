@@ -54,4 +54,92 @@ class SketchRepositoryTest {
 
         assertThat(names).containsExactly("Blink.ino", "Alpha.cpp", "zeta.h").inOrder()
     }
+
+    // Bug 1: text/plain made SAF save pins.h as pins.h.txt.
+    @Test
+    fun addFileKeepsHeaderExtension() {
+        val sketch = repository.createSketch("Blink")
+
+        val added = repository.addFile(sketch, "pins.h")
+
+        assertThat(added.name).isEqualTo("pins.h")
+        assertThat(storage.exists("Blink/pins.h")).isTrue()
+        assertThat(storage.exists("Blink/pins.h.txt")).isFalse()
+        assertThat(repository.listFiles(sketch).map { it.name }).contains("pins.h")
+    }
+
+    @Test
+    fun addFileRejectsBadNames() {
+        val sketch = repository.createSketch("Blink")
+        assertThrows(SketchNameInvalidException::class.java) { repository.addFile(sketch, "a.b.h") }
+        assertThrows(SketchNameInvalidException::class.java) { repository.addFile(sketch, "run.sh") }
+        assertThrows(SketchNameInvalidException::class.java) { repository.addFile(sketch, " ") }
+    }
+
+    // Bug 2: renaming the folder first left the primary .ino with its old name.
+    @Test
+    fun renameSketchRenamesFolderAndPrimaryIno() {
+        val sketch = repository.createSketch("Blink")
+        repository.addFile(sketch, "pins.h")
+
+        repository.renameSketch(sketch, "Blinky")
+
+        assertThat(storage.exists("Blinky/Blinky.ino")).isTrue()
+        assertThat(storage.exists("Blinky/pins.h")).isTrue()
+        assertThat(storage.exists("Blinky/Blink.ino")).isFalse()
+        assertThat(storage.exists("Blink")).isFalse()
+        assertThat(repository.listSketches().map { it.name }).containsExactly("Blinky")
+    }
+
+    @Test
+    fun renameSketchRollsBackInoWhenFolderRenameFails() {
+        val sketch = repository.createSketch("Blink")
+        storage.failRenamesTo += "Blinky"
+
+        assertThrows(SketchRenameFailedException::class.java) { repository.renameSketch(sketch, "Blinky") }
+
+        assertThat(storage.exists("Blink/Blink.ino")).isTrue()
+        assertThat(storage.exists("Blink/Blinky.ino")).isFalse()
+    }
+
+    @Test
+    fun renameSketchFailsCleanlyWhenInoRenameFails() {
+        val sketch = repository.createSketch("Blink")
+        storage.failRenamesTo += "Blinky.ino"
+
+        assertThrows(SketchRenameFailedException::class.java) { repository.renameSketch(sketch, "Blinky") }
+
+        assertThat(storage.exists("Blink/Blink.ino")).isTrue()
+    }
+
+    // Bug 5: folders without a matching .ino (libraries/, notes/) were listed as sketches.
+    @Test
+    fun listSketchesOnlyIncludesFoldersWithMatchingIno() {
+        storage.put("Blink/Blink.ino", "")
+        storage.put("libraries/Servo/Servo.h", "")
+        storage.put("notes/todo.txt", "")
+        storage.put("Mismatch/Other.ino", "")
+        storage.put("stray.ino", "")
+
+        assertThat(repository.listSketches().map { it.name }).containsExactly("Blink")
+    }
+
+    // Bug 5: delete ignored failures.
+    @Test
+    fun deleteSketchReportsFailure() {
+        val sketch = repository.createSketch("Blink")
+        storage.failDeletesOf += sketch.folderId
+
+        assertThrows(SketchDeleteFailedException::class.java) { repository.deleteSketch(sketch) }
+        assertThat(storage.exists("Blink/Blink.ino")).isTrue()
+    }
+
+    @Test
+    fun deleteSketchRemovesFolder() {
+        val sketch = repository.createSketch("Blink")
+
+        repository.deleteSketch(sketch)
+
+        assertThat(storage.paths()).isEmpty()
+    }
 }
