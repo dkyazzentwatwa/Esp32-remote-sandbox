@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="org.espsketchide.esptool.QemuFlashTest" tests="1" skipped="0" failures="0" errors="0" timestamp="2026-09-27T07:27:27.609Z" hostname="vm" time="40.882">
+  <properties/>
+  <testcase name="flashImageMatchesEsptool" classname="org.espsketchide.esptool.QemuFlashTest" time="40.877"/>
+  <system-out><![CDATA[QEMU flash of 294032 bytes took 40622 ms
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

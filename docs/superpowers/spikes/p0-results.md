@@ -88,6 +88,24 @@ build: **796 files, 167.5 MB unpacked (120 MB Arduino core + SDK, 51 MB gcc targ
 27.9 MB `.tar.xz`**. A pack-only replay reproduces the desktop build. WiFi/BLE sketches will
 need more SDK libraries; measure them before fixing the pack format.
 
+### 2026-09-27: Kotlin ROM flasher matches esptool (P0.5 / P4 core, emulated)
+
+New pure-JVM module `EspSketchIDE/esptool` (SLIP, ROM commands, flash flow, auto-reset lines),
+written from Espressif's protocol documentation. Tested with 15 unit tests against our own
+model of the ROM, and against **Espressif's QEMU ESP32 (esp_develop_9.2.2_20260417) in
+download mode**: flashing Blink's bootloader, partition table, boot_app0 and app gives a 4 MB
+flash image **byte-identical** to `esptool --no-stub write-flash` of the same files.
+
+Two corrections found this way (esptool read as a behaviour reference):
+- esptool writes **uncompressed** (`FLASH_BEGIN`/`FLASH_DATA`) with the ROM loader; its
+  compressed path is for the stub. On the emulated ROM our compressed writes left the bytes
+  after each image unerased, so compressed mode is now opt-in.
+- The ROM rejects/acts on `FLASH_END` by leaving the loader; esptool doesn't send it. We
+  don't either and reset over RTS instead.
+
+The emulated QEMU image also boots Blink up to flash init, where it stops because QEMU's flash
+model lacks QIO mode (`qio_mode: Failed to set QIE bit`); a DIO build would boot fully.
+
 ## Still to measure
 
 On real phones (needs the maintainer, see `EspSketchIDE/spike/README.md`): exec/dlopen paths

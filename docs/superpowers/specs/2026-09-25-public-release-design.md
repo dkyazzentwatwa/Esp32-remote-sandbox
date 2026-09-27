@@ -113,8 +113,13 @@ Therefore: **host executables ship in the APK; everything else is downloadable d
 - Auto-reset: esptool classic DTR/RTS sequence, retry with alternate timings; fallback UI
   "hold BOOT, tap EN" with diagram.
 - v0.1 uses the **ESP32 ROM loader only** (no stub): SLIP, `SYNC`, `READ_REG` chip detect,
-  `CHANGE_BAUDRATE` 460800, `FLASH_DEFL_BEGIN/DATA/END`, `SPI_FLASH_MD5` verify, hard reset.
-  Writes bootloader / partitions / boot_app0 / app at `flash_args` offsets.
+  `CHANGE_BAUDRATE` 460800, `SPI_ATTACH`, `SPI_SET_PARAMS`, then per image `FLASH_BEGIN` /
+  `FLASH_DATA` (1 KiB blocks, last one padded with 0xFF) and `SPI_FLASH_MD5` verify, then a
+  hard reset over RTS. *Changed 2026-09-27:* uncompressed writes by default, as esptool does
+  with the ROM loader; no `FLASH_END` (in the ROM it exits the loader). Verified against
+  Espressif's emulated ESP32 ROM (QEMU): the flash image is byte-identical to esptool's.
+  Compressed `FLASH_DEFL_*` is implemented but off until checked on real chips (on the emulated
+  ROM it leaves the bytes after each image unerased).
 - Stub flasher deferred to v0.2 (needed for ESP8266; GPL-2.0 licensing to review).
 - Serial monitor on the same connection: baud, autoscroll, send box, line endings; auto
   release/reacquire the port around uploads.
