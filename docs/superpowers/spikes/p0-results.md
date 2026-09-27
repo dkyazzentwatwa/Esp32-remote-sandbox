@@ -106,6 +106,29 @@ Two corrections found this way (esptool read as a behaviour reference):
 The emulated QEMU image also boots Blink up to flash init, where it stops because QEMU's flash
 model lacks QIO mode (`qio_mode: Failed to set QIE bit`); a DIO build would boot fully.
 
+### 2026-09-27: armeabi-v7a toolchain works too (emulated)
+
+- Built with `toolchain/build-android.sh armeabi-v7a` after one fix: GMP/MPFR/MPC need
+  `--with-pic`, and GMP's 32-bit ARM assembly isn't PIC (`--disable-assembly` there).
+  57 MB unpacked, 16 MB `.tar.xz`.
+- No Android 8+ emulator image ships 32-bit bionic, so the test used Android 7.1 (API 25)
+  armeabi-v7a bionic with three test-only accommodations: `DF_1_PIE` cleared in a copy of the
+  binaries (the 7.1 linker rejects it; 8.0+ accepts it), an `LD_PRELOAD` shim for
+  `nl_langinfo` (the only import missing from API 25 of 220), and `ANDROID_ROOT=/system`
+  (bionic crashes in its tzdata lookup for `__TIME__` without it; Android always sets it).
+- Blink through the phone layout: `.flash.text`, `.iram0.text`, `.dram0.data` identical to
+  Espressif's desktop toolchain; `.flash.rodata` same size (differs only in `__TIME__`).
+  227 s under qemu-arm.
+
+### 2026-09-27: Build engine status
+
+`EspSketchIDE/buildengine` builds sketches end to end with the same results as arduino-cli
+(properties, `.ino.cpp`, libraries, partition tables, bootloader, app/merged images byte for
+byte; full Blink/WiFi builds with identical code sections and sizes), and drives the relocated
+phone toolchain through `XtensaToolchainRunner`. Library discovery preprocesses every library
+source: ~16 s per WiFi/BLE sketch on the desktop, likely minutes on a phone, so bundled-library
+dependencies should be precomputed into the board pack (P2).
+
 ## Still to measure
 
 On real phones (needs the maintainer, see `EspSketchIDE/spike/README.md`): exec/dlopen paths
