@@ -4,25 +4,31 @@ package org.espsketchide.buildengine
 object CommandLine {
 
     /**
-     * Splits on unquoted whitespace. Double quotes group text and are removed; there is no
-     * escaping (recipes rely on this: `-DARDUINO_BOARD="ESP32_DEV"` becomes `-DARDUINO_BOARD=ESP32_DEV`).
+     * Splits on whitespace. A token that *starts* with `"` or `'` runs to the matching quote and
+     * loses the quotes (`"{source_file}"` -> the path); quotes elsewhere stay part of the token
+     * (`-DARDUINO_BOARD="ESP32_DEV"` keeps them, so the macro is a string literal).
      */
     fun split(command: String): List<String> {
         val args = mutableListOf<String>()
-        val current = StringBuilder()
-        var inQuotes = false
-        var hasToken = false
-        for (c in command) {
+        var i = 0
+        val n = command.length
+        while (i < n) {
+            val c = command[i]
             when {
-                c == '"' -> { inQuotes = !inQuotes; hasToken = true }
-                c.isWhitespace() && !inQuotes -> {
-                    if (hasToken) { args += current.toString(); current.clear(); hasToken = false }
+                c.isWhitespace() -> i++
+                c == '"' || c == '\'' -> {
+                    val close = command.indexOf(c, i + 1)
+                    if (close < 0) throw BuildException("Unbalanced quotes in command: $command")
+                    args += command.substring(i + 1, close)
+                    i = close + 1
                 }
-                else -> { current.append(c); hasToken = true }
+                else -> {
+                    val start = i
+                    while (i < n && !command[i].isWhitespace()) i++
+                    args += command.substring(start, i)
+                }
             }
         }
-        if (inQuotes) throw BuildException("Unbalanced quotes in command: $command")
-        if (hasToken) args += current.toString()
         return args
     }
 }

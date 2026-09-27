@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="org.espsketchide.buildengine.SketchPreprocessorGoldenTest" tests="8" skipped="0" failures="0" errors="0" timestamp="2026-09-27T07:58:30.304Z" hostname="vm" time="70.882">
+  <properties/>
+  <testcase name="button" classname="org.espsketchide.buildengine.SketchPreprocessorGoldenTest" time="1.631"/>
+  <testcase name="wifiScan" classname="org.espsketchide.buildengine.SketchPreprocessorGoldenTest" time="14.656"/>
+  <testcase name="helloSerial" classname="org.espsketchide.buildengine.SketchPreprocessorGoldenTest" time="1.664"/>
+  <testcase name="analogReadSerial" classname="org.espsketchide.buildengine.SketchPreprocessorGoldenTest" time="1.681"/>
+  <testcase name="wifiAccessPointLed" classname="org.espsketchide.buildengine.SketchPreprocessorGoldenTest" time="24.113"/>
+  <testcase name="bleScan" classname="org.espsketchide.buildengine.SketchPreprocessorGoldenTest" time="23.727"/>
+  <testcase name="fade" classname="org.espsketchide.buildengine.SketchPreprocessorGoldenTest" time="1.714"/>
+  <testcase name="blink" classname="org.espsketchide.buildengine.SketchPreprocessorGoldenTest" time="1.696"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

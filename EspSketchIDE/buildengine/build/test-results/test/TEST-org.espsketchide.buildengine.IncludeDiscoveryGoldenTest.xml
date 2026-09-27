@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="org.espsketchide.buildengine.IncludeDiscoveryGoldenTest" tests="4" skipped="0" failures="0" errors="0" timestamp="2026-09-27T07:57:28.660Z" hostname="vm" time="61.611">
+  <properties/>
+  <testcase name="wifiScan" classname="org.espsketchide.buildengine.IncludeDiscoveryGoldenTest" time="13.727"/>
+  <testcase name="blinkNeedsNoLibraries" classname="org.espsketchide.buildengine.IncludeDiscoveryGoldenTest" time="1.006"/>
+  <testcase name="wifiAccessPointLed" classname="org.espsketchide.buildengine.IncludeDiscoveryGoldenTest" time="23.931"/>
+  <testcase name="bleScan" classname="org.espsketchide.buildengine.IncludeDiscoveryGoldenTest" time="22.947"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

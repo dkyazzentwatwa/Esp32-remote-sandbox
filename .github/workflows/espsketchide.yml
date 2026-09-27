@@ -26,7 +26,7 @@ jobs:
           java-version: "17"
       - uses: gradle/actions/setup-gradle@v4
       - name: Unit tests
-        run: ./gradlew :app:testDebugUnitTest :esptool:test
+        run: ./gradlew :app:testDebugUnitTest :esptool:test :buildengine:test
       - name: Lint
         run: ./gradlew :app:lintDebug
       - name: Debug APK
@@ -39,6 +39,7 @@ jobs:
             EspSketchIDE/app/build/reports/
             EspSketchIDE/app/build/test-results/
             EspSketchIDE/esptool/build/test-results/
+            EspSketchIDE/buildengine/build/test-results/
       - uses: actions/upload-artifact@v4
         with:
           name: app-debug
@@ -63,6 +64,20 @@ jobs:
           "$RUNNER_TEMP/arduino-cli" config set board_manager.additional_urls https://espressif.github.io/arduino-esp32/package_esp32_index.json
           "$RUNNER_TEMP/arduino-cli" core update-index
           "$RUNNER_TEMP/arduino-cli" core install "esp32:esp32@$ESP32_CORE"
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Build-engine golden tests (compare with arduino-cli)
+        run: |
+          buildengine/golden/make-reference.sh "$RUNNER_TEMP/golden"
+          ESP32_REFERENCE_DIR="$RUNNER_TEMP/golden" ./gradlew :buildengine:test
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: buildengine-golden-results
+          path: EspSketchIDE/buildengine/build/test-results/
       - name: Compile every example for ESP32 Dev Module
         run: |
           status=0

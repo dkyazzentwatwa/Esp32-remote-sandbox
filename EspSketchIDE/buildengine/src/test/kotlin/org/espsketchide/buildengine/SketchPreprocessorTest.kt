@@ -77,7 +77,8 @@ class SketchPreprocessorTest {
 
     @Test
     fun commandLineSplitFollowsArduinoQuoting() {
-        assertThat(CommandLine.split("\"/bin/g++\"  -DBOARD=\"ESP32_DEV\" \"-I/a b\" -c x.cpp"))
-            .containsExactly("/bin/g++", "-DBOARD=ESP32_DEV", "-I/a b", "-c", "x.cpp").inOrder()
+        // Leading quotes group and are removed; inner quotes are kept (string macros).
+        assertThat(CommandLine.split("\"/bin/g++\"  -DBOARD=\"ESP32_DEV\" \"-I/a b\" -c 'x y.cpp'"))
+            .containsExactly("/bin/g++", "-DBOARD=\"ESP32_DEV\"", "-I/a b", "-c", "x y.cpp").inOrder()
     }
 }
