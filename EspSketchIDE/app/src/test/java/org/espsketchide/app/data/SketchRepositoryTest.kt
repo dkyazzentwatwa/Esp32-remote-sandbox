@@ -142,4 +142,32 @@ class SketchRepositoryTest {
 
         assertThat(storage.paths()).isEmpty()
     }
+
+    @Test
+    fun copyFromExampleUsesExampleName() {
+        val sketch = repository.createFromFiles("Blink", mapOf("Blink.ino" to "blink();", "pins.h" to "#define P 2"))
+
+        assertThat(sketch.name).isEqualTo("Blink")
+        assertThat(storage.contentOf("Blink/Blink.ino")).isEqualTo("blink();")
+        assertThat(storage.contentOf("Blink/pins.h")).isEqualTo("#define P 2")
+    }
+
+    @Test
+    fun copyFromExamplePicksFreeNameAndRenamesPrimaryIno() {
+        repository.createSketch("Blink")
+        repository.createSketch("Blink_2")
+
+        val sketch = repository.createFromFiles("Blink", mapOf("Blink.ino" to "blink();"))
+
+        assertThat(sketch.name).isEqualTo("Blink_3")
+        assertThat(storage.contentOf("Blink_3/Blink_3.ino")).isEqualTo("blink();")
+        assertThat(storage.exists("Blink_3/Blink.ino")).isFalse()
+    }
+
+    @Test
+    fun copyFromExampleSkipsUnsupportedFiles() {
+        val sketch = repository.createFromFiles("Web", mapOf("Web.ino" to "x", "data.bin" to "y", "a.b.h" to "z"))
+
+        assertThat(repository.listFiles(sketch).map { it.name }).containsExactly("Web.ino")
+    }
 }

@@ -2,13 +2,30 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <item
+        android:id="@+id/action_undo"
+        android:icon="@drawable/ic_undo"
+        android:title="@string/action_undo"
+        app:showAsAction="always" />
+    <item
+        android:id="@+id/action_redo"
+        android:icon="@drawable/ic_redo"
+        android:title="@string/action_redo"
+        app:showAsAction="always" />
+    <item
         android:id="@+id/action_save"
         android:icon="@android:drawable/ic_menu_save"
         android:title="@string/action_save"
-        app:showAsAction="always" />
+        app:showAsAction="ifRoom" />
     <item
         android:id="@+id/action_add_file"
-        android:icon="@android:drawable/ic_input_add"
         android:title="@string/action_add_file"
-        app:showAsAction="always" />
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/action_text_larger"
+        android:title="@string/action_text_larger"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/action_text_smaller"
+        android:title="@string/action_text_smaller"
+        app:showAsAction="never" />
 </menu>

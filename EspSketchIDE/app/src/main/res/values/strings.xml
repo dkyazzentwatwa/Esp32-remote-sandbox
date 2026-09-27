@@ -26,16 +26,19 @@
     <string name="error_read_failed">Couldn\'t open \"%1$s\".</string>
     <string name="error_save_failed">Couldn\'t save \"%1$s\". Your changes are still in the editor.</string>
     <string name="error_highlighting_failed">Syntax highlighting is unavailable; editing still works.</string>
+    <string name="error_example_copy_failed">Couldn\'t copy the \"%1$s\" example.</string>
     <string name="hint_file_name">e.g. pins.h</string>
     <string name="error_no_storage_access">Grant access to a folder to store your sketches.</string>
 
-    <string name="editor_title">%1$s</string>
-    <string name="editor_unsaved_indicator">%1$s •</string>
     <string name="action_save">Save</string>
     <string name="action_add_file">Add file</string>
     <string name="saved_toast">Saved</string>
+    <string name="action_undo">Undo</string>
+    <string name="action_redo">Redo</string>
+    <string name="action_text_larger">Larger text</string>
+    <string name="action_text_smaller">Smaller text</string>
+    <string name="action_new_from_example">New from example</string>
+    <string name="dialog_examples_title">Examples</string>
 
-    <string name="board_esp32">ESP32</string>
-    <string name="board_esp8266">ESP8266</string>
     <string name="roadmap_notice">Compiling and uploading sketches on-device is on the roadmap and not yet implemented — see the README for status.</string>
 </resources>

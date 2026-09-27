@@ -2,6 +2,10 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <item
+        android:id="@+id/action_new_from_example"
+        android:title="@string/action_new_from_example"
+        app:showAsAction="never" />
+    <item
         android:id="@+id/action_change_folder"
         android:title="@string/action_open_folder"
         app:showAsAction="never" />

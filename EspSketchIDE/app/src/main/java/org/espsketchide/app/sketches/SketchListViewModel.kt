@@ -18,6 +18,8 @@ import org.espsketchide.app.data.SketchDeleteFailedException
 import org.espsketchide.app.data.SketchNameInvalidException
 import org.espsketchide.app.data.SketchRenameFailedException
 import org.espsketchide.app.data.SketchRepository
+import org.espsketchide.app.examples.Example
+import org.espsketchide.app.examples.ExampleSource
 import org.espsketchide.app.model.Sketch
 
 data class SketchListUiState(
@@ -30,6 +32,7 @@ data class SketchListError(@StringRes val message: Int, val arg: String? = null)
 
 class SketchListViewModel(
     private val repository: SketchRepository,
+    private val examples: ExampleSource,
     private val io: CoroutineDispatcher = Dispatchers.IO
 ) : ViewModel() {
 
@@ -38,6 +41,24 @@ class SketchListViewModel(
 
     private val _errors = Channel<SketchListError>(Channel.BUFFERED)
     val errors = _errors.receiveAsFlow()
+
+    /** Sketches to open right away, e.g. a freshly copied example. */
+    private val _open = Channel<Sketch>(Channel.BUFFERED)
+    val open = _open.receiveAsFlow()
+
+    suspend fun listExamples(): List<Example> = withContext(io) { examples.list() }
+
+    fun createFromExample(example: Example) {
+        viewModelScope.launch {
+            try {
+                val sketch = withContext(io) { repository.createFromFiles(example.name, examples.files(example)) }
+                _open.send(sketch)
+            } catch (e: Exception) {
+                _errors.send(SketchListError(R.string.error_example_copy_failed, example.name))
+            }
+            reload()
+        }
+    }
 
     fun refresh() {
         viewModelScope.launch { reload() }

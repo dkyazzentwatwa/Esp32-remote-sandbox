@@ -16,11 +16,14 @@ import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.tabs.TabLayout
+import io.github.rosemoe.sora.event.ContentChangeEvent
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.espsketchide.app.databinding.ActivityEditorBinding
 import org.espsketchide.app.editor.EditorEvent
+import org.espsketchide.app.editor.EditorPrefs
+import org.espsketchide.app.editor.FontSize
 import org.espsketchide.app.editor.EditorUiState
 import org.espsketchide.app.editor.EditorViewModel
 import org.espsketchide.app.editor.Highlighting
@@ -46,6 +49,8 @@ class EditorActivity : AppCompatActivity() {
 
     private var renderedFiles: List<SketchFile> = emptyList()
     private var appliedVersion = 0
+
+    private lateinit var prefs: EditorPrefs
 
     private var highlightingReady = false
     private var appliedKind: SourceKind? = null
@@ -90,7 +95,16 @@ class EditorActivity : AppCompatActivity() {
     }
 
     private fun setupEditor() {
-        binding.codeEditor.setTextSize(14f)
+        prefs = EditorPrefs(this)
+        val editor = binding.codeEditor
+        editor.setTextSize(prefs.fontSizeSp)
+        editor.setScalable(true)
+        editor.setScaleTextSizes(spToPx(FontSize.MIN), spToPx(FontSize.MAX))
+        editor.subscribeEvent(ContentChangeEvent::class.java) { _, _ -> invalidateOptionsMenu() }
+
+        binding.symbolBar.bindEditor(editor)
+        binding.symbolBar.addSymbols(SYMBOLS.map { if (it == "\t") "⇥" else it }.toTypedArray(), SYMBOLS)
+
         val isDarkMode = (resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK) ==
             Configuration.UI_MODE_NIGHT_YES
         lifecycleScope.launch {
@@ -168,6 +182,7 @@ class EditorActivity : AppCompatActivity() {
 
     override fun onPause() {
         super.onPause()
+        if (::prefs.isInitialized) prefs.fontSizeSp = pxToSp(binding.codeEditor.textSizePx)
         if (::sketch.isInitialized) {
             pushEditorText()
             viewModel.saveInBackground()
@@ -179,8 +194,32 @@ class EditorActivity : AppCompatActivity() {
         return true
     }
 
+    override fun onPrepareOptionsMenu(menu: Menu): Boolean {
+        menu.findItem(R.id.action_undo)?.isEnabled = binding.codeEditor.canUndo()
+        menu.findItem(R.id.action_redo)?.isEnabled = binding.codeEditor.canRedo()
+        return super.onPrepareOptionsMenu(menu)
+    }
+
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
+            R.id.action_undo -> {
+                binding.codeEditor.undo()
+                invalidateOptionsMenu()
+                true
+            }
+            R.id.action_redo -> {
+                binding.codeEditor.redo()
+                invalidateOptionsMenu()
+                true
+            }
+            R.id.action_text_larger -> {
+                setFontSize(FontSize.larger(pxToSp(binding.codeEditor.textSizePx)))
+                true
+            }
+            R.id.action_text_smaller -> {
+                setFontSize(FontSize.smaller(pxToSp(binding.codeEditor.textSizePx)))
+                true
+            }
             android.R.id.home -> {
                 finish()
                 true
@@ -211,7 +250,22 @@ class EditorActivity : AppCompatActivity() {
             .show()
     }
 
+    private fun setFontSize(sp: Float) {
+        binding.codeEditor.setTextSize(sp)
+        prefs.fontSizeSp = sp
+    }
+
+    private fun spToPx(sp: Float): Float = sp * resources.displayMetrics.density * resources.configuration.fontScale
+
+    private fun pxToSp(px: Float): Float = px / (resources.displayMetrics.density * resources.configuration.fontScale)
+
     companion object {
+        /** Symbol bar keys; "\t" is shown as ⇥ and inserts indentation. */
+        private val SYMBOLS = arrayOf(
+            "\t", "{", "}", "(", ")", ";", "<", ">", "=", "\"", "'", "#", "&", "|",
+            "[", "]", "/", "*", "+", "-", "!", "_", ",", "."
+        )
+
         const val EXTRA_SKETCH_NAME = "extra_sketch_name"
         const val EXTRA_SKETCH_FOLDER_ID = "extra_sketch_folder_id"
     }

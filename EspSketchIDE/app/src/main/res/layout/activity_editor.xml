@@ -34,4 +34,18 @@
         android:layout_height="0dp"
         android:layout_weight="1" />
 
+    <!-- Symbols that are awkward to reach on a phone keyboard. -->
+    <HorizontalScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="?attr/colorSurfaceContainer"
+        android:scrollbars="none">
+
+        <io.github.rosemoe.sora.widget.SymbolInputView
+            android:id="@+id/symbolBar"
+            android:layout_width="wrap_content"
+            android:layout_height="44dp" />
+
+    </HorizontalScrollView>
+
 </LinearLayout>

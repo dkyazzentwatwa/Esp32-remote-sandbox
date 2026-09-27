@@ -22,6 +22,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.launch
 import org.espsketchide.app.databinding.ActivitySketchListBinding
+import org.espsketchide.app.examples.AssetExampleSource
 import org.espsketchide.app.model.Sketch
 import org.espsketchide.app.sketches.SketchListUiState
 import org.espsketchide.app.sketches.SketchListViewModel
@@ -36,7 +37,11 @@ class SketchListActivity : AppCompatActivity() {
     private val app get() = application as EspSketchApp
 
     private val viewModel: SketchListViewModel by viewModels {
-        viewModelFactory { initializer { SketchListViewModel((application as EspSketchApp).repository) } }
+        viewModelFactory {
+            initializer {
+                SketchListViewModel((application as EspSketchApp).repository, AssetExampleSource(assets))
+            }
+        }
     }
 
     private val pickRootFolder = registerForActivityResult(
@@ -74,6 +79,7 @@ class SketchListActivity : AppCompatActivity() {
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 launch { viewModel.state.collect(::render) }
+                launch { viewModel.open.collect(::openSketch) }
                 launch {
                     viewModel.errors.collect { error ->
                         Snackbar.make(binding.root, getString(error.message, error.arg), Snackbar.LENGTH_LONG).show()
@@ -98,11 +104,33 @@ class SketchListActivity : AppCompatActivity() {
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        if (item.itemId == R.id.action_change_folder) {
-            pickRootFolder.launch(null)
-            return true
+        return when (item.itemId) {
+            R.id.action_change_folder -> {
+                pickRootFolder.launch(null)
+                true
+            }
+            R.id.action_new_from_example -> {
+                pickExample()
+                true
+            }
+            else -> super.onOptionsItemSelected(item)
         }
-        return super.onOptionsItemSelected(item)
+    }
+
+    private fun pickExample() {
+        if (!viewModel.state.value.hasRoot) {
+            pickRootFolder.launch(null)
+            return
+        }
+        lifecycleScope.launch {
+            val examples = viewModel.listExamples()
+            val labels = examples.map { "${it.category} › ${it.name}" }.toTypedArray()
+            AlertDialog.Builder(this@SketchListActivity)
+                .setTitle(R.string.dialog_examples_title)
+                .setItems(labels) { _, which -> viewModel.createFromExample(examples[which]) }
+                .setNegativeButton(R.string.dialog_cancel, null)
+                .show()
+        }
     }
 
     private fun render(state: SketchListUiState) {

@@ -78,6 +78,26 @@ class SketchRepository(private val storage: SketchStorage) {
         if (!storage.delete(folderNode(sketch))) throw SketchDeleteFailedException()
     }
 
+    /**
+     * Creates a new sketch from [files] (name to content), e.g. a bundled example. The sketch is
+     * named [baseName], or `baseName_2`, `_3`... if taken; the primary .ino is renamed to match.
+     * Files with unsupported names are skipped.
+     */
+    fun createFromFiles(baseName: String, files: Map<String, String>): Sketch {
+        val root = storage.root() ?: throw IllegalStateException("No sketches root set")
+        val taken = storage.children(root).map { it.name.lowercase() }.toSet()
+        val name = generateSequence(1) { it + 1 }
+            .map { if (it == 1) baseName else "${baseName}_$it" }
+            .first { it.lowercase() !in taken }
+
+        val primary = files["$baseName.ino"].orEmpty()
+        val sketch = createSketch(name, primary)
+        files.filterKeys { it != "$baseName.ino" && isSupportedFileName(it) }.forEach { (fileName, content) ->
+            writeFile(addFile(sketch, fileName), content)
+        }
+        return sketch
+    }
+
     fun listFiles(sketch: Sketch): List<SketchFile> {
         val files = storage.children(folderNode(sketch))
             .filter { !it.isDirectory && extensionOf(it.name) in EDITABLE_EXTENSIONS }
@@ -92,10 +112,7 @@ class SketchRepository(private val storage: SketchStorage) {
     @Throws(SketchNameInvalidException::class, SketchAlreadyExistsException::class)
     fun addFile(sketch: Sketch, fileName: String): SketchFile {
         val folder = folderNode(sketch)
-        val ext = extensionOf(fileName)
-        if (fileName.isBlank() || ext !in EDITABLE_EXTENSIONS || fileName.count { it == '.' } != 1) {
-            throw SketchNameInvalidException()
-        }
+        if (!isSupportedFileName(fileName)) throw SketchNameInvalidException()
         if (storage.find(folder, fileName) != null) throw SketchAlreadyExistsException()
 
         val file = storage.createFile(folder, mimeTypeFor(fileName), fileName)
@@ -110,6 +127,9 @@ class SketchRepository(private val storage: SketchStorage) {
     private fun folderNode(sketch: Sketch) = StorageNode(sketch.folderId, sketch.name, isDirectory = true)
 
     private fun fileNode(file: SketchFile) = StorageNode(file.id, file.name, isDirectory = false)
+
+    private fun isSupportedFileName(fileName: String): Boolean =
+        fileName.isNotBlank() && extensionOf(fileName) in EDITABLE_EXTENSIONS && fileName.count { it == '.' } == 1
 
     private fun extensionOf(fileName: String): String = fileName.substringAfterLast('.', "")
 
