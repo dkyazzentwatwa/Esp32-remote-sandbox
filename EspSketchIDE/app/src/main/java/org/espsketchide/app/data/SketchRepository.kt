@@ -6,11 +6,11 @@ import android.net.Uri
 import androidx.documentfile.provider.DocumentFile
 import org.espsketchide.app.model.Sketch
 import org.espsketchide.app.model.SketchFile
+import org.espsketchide.app.settings.PREFS_NAME
 import java.io.BufferedReader
 import java.io.InputStreamReader
 import java.io.OutputStreamWriter
 
-private const val PREFS_NAME = "esp_sketch_ide"
 private const val KEY_ROOT_URI = "sketches_root_uri"
 
 private val VALID_SKETCH_NAME = Regex("^[A-Za-z][A-Za-z0-9_]*$")
