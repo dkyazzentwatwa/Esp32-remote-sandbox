@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="org.espsketchide.buildengine.BuilderGoldenTest" tests="2" skipped="0" failures="0" errors="0" timestamp="2026-09-27T07:56:04.731Z" hostname="vm" time="82.823">
-  <properties/>
-  <testcase name="wifiAccessPointLed" classname="org.espsketchide.buildengine.BuilderGoldenTest" time="71.207"/>
-  <testcase name="blink" classname="org.espsketchide.buildengine.BuilderGoldenTest" time="11.611"/>
-  <system-out><![CDATA[]]></system-out>
-  <system-err><![CDATA[]]></system-err>
-</testsuite>
