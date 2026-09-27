@@ -13,3 +13,4 @@ app/build/
 *.dex
 *.class
 /toolchain-work/
+/spike/execprobe/build/

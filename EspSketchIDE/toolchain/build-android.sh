@@ -8,7 +8,9 @@
 #
 # Usage: toolchain/build-android.sh <arm64-v8a|armeabi-v7a> [stage...]
 #   stages: sources deps plugin binutils gcc package (default: all, in that order)
-# Env:    ANDROID_NDK_HOME (required), WORK (default: ./toolchain-work), JOBS (default: nproc)
+# Env:    ANDROID_NDK_HOME (required), WORK (default: ./toolchain-work), JOBS (default: nproc),
+#         BUILD_XTENSA_BIN: bin/ of Espressif's desktop xtensa-esp-elf toolchain of the same
+#         version (required for the gcc stage: a canadian cross runs it to generate specs).
 set -euo pipefail
 
 HERE="$(cd "$(dirname "$0")" && pwd)"
@@ -43,6 +45,8 @@ export NM="$LLVM/llvm-nm" OBJCOPY="$LLVM/llvm-objcopy" OBJDUMP="$LLVM/llvm-objdu
 # Build-machine compilers for gcc's generator programs.
 export CC_FOR_BUILD=gcc CXX_FOR_BUILD=g++
 export CFLAGS="-O2" CXXFLAGS="-O2"
+# Link libc++ into each program so they only need Android's own libc/libm/libdl.
+export LDFLAGS="-static-libstdc++"
 
 log() { echo "==> [$ABI] $*"; }
 
@@ -106,13 +110,14 @@ stage_plugin() {
 
 stage_binutils() {
   log "binutils (as, ld, ar, objcopy, size)"
+  # --enable-plugins is required: bfd loads the xtensa dynconfig only with plugin support.
   local dir="$BUILD/binutils"
   rm -rf "$dir" && mkdir -p "$dir"
   (cd "$dir" && "$SRC/binutils-gdb/configure" \
       --build=x86_64-linux-gnu --host="$TRIPLE" --target=xtensa-esp-elf \
       --prefix=/ --with-sysroot=/xtensa-esp-elf \
       --disable-gdb --disable-gdbserver --disable-sim --disable-gprofng \
-      --disable-nls --disable-werror --disable-plugins --disable-shared \
+      --disable-nls --disable-werror --enable-plugins --disable-shared \
       --without-debuginfod --without-zstd --with-system-zlib=no >configure.log \
     && make -j"$JOBS" all-binutils all-gas all-ld >make.log \
     && make DESTDIR="$STAGE" install-binutils install-gas install-ld >install.log)
@@ -120,10 +125,17 @@ stage_binutils() {
 
 stage_gcc() {
   log "gcc (drivers, cc1, cc1plus, collect2)"
+  local xgcc="${BUILD_XTENSA_BIN:?set BUILD_XTENSA_BIN to the desktop xtensa-esp-elf toolchain bin/}"
+  "$xgcc/xtensa-esp-elf-gcc" -dumpversion | grep -qx "$GCC_VERSION" \
+    || { echo "BUILD_XTENSA_BIN gcc is not $GCC_VERSION" >&2; exit 1; }
+  export PATH="$xgcc:$PATH"
   local dir="$BUILD/gcc"
   rm -rf "$dir" && mkdir -p "$dir"
-  # Options mirror `xtensa-esp-elf-gcc -v` of Espressif's release, minus build-machine paths,
-  # LTO (Arduino-ESP32 doesn't use it) and plugins.
+  # Options mirror `xtensa-esp-elf-gcc -v` of Espressif's release, minus build-machine paths
+  # and LTO (Arduino-ESP32 doesn't use it). --enable-plugin is required: gcc loads the xtensa
+  # dynconfig through its plugin machinery and refuses XTENSA_GNU_CONFIG without it.
+  # --enable-host-pie: gcc 14 otherwise builds
+  # its programs with -fno-PIE, which Android won't run and lld can't link against bionic.
   (cd "$dir" && "$SRC/gcc/configure" \
       --build=x86_64-linux-gnu --host="$TRIPLE" --target=xtensa-esp-elf \
       --prefix=/ --with-sysroot=/xtensa-esp-elf --with-native-system-header-dir=/include \
@@ -134,7 +146,8 @@ stage_gcc() {
       --disable-libquadmath --disable-libquadmath-support --disable-libstdcxx-verbose \
       --enable-target-optspace --without-long-double-128 --disable-nls --enable-multiarch \
       --enable-languages=c,c++ --enable-threads=posix --enable-libstdcxx-time=yes \
-      --disable-lto --disable-plugin --disable-werror \
+      --disable-lto --enable-plugin --disable-werror \
+      --enable-host-pie \
       --with-pkgversion="EspSketchIDE android $ESP_GCC_REF" >configure.log \
     && make -j"$JOBS" all-gcc >make.log \
     && make DESTDIR="$STAGE" install-gcc >install.log)
