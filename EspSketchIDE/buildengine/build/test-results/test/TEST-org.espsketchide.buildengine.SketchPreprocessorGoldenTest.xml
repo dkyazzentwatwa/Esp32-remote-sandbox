@@ -1,11 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="org.espsketchide.buildengine.SketchPreprocessorGoldenTest" tests="5" skipped="0" failures="0" errors="0" timestamp="2026-09-27T07:41:49.222Z" hostname="vm" time="7.021">
+<testsuite name="org.espsketchide.buildengine.SketchPreprocessorGoldenTest" tests="8" skipped="0" failures="0" errors="0" timestamp="2026-09-27T07:45:48.250Z" hostname="vm" time="72.545">
   <properties/>
-  <testcase name="button" classname="org.espsketchide.buildengine.SketchPreprocessorGoldenTest" time="2.013"/>
-  <testcase name="helloSerial" classname="org.espsketchide.buildengine.SketchPreprocessorGoldenTest" time="1.309"/>
-  <testcase name="analogReadSerial" classname="org.espsketchide.buildengine.SketchPreprocessorGoldenTest" time="1.15"/>
-  <testcase name="fade" classname="org.espsketchide.buildengine.SketchPreprocessorGoldenTest" time="1.078"/>
-  <testcase name="blink" classname="org.espsketchide.buildengine.SketchPreprocessorGoldenTest" time="1.466"/>
+  <testcase name="button" classname="org.espsketchide.buildengine.SketchPreprocessorGoldenTest" time="2.603"/>
+  <testcase name="wifiScan" classname="org.espsketchide.buildengine.SketchPreprocessorGoldenTest" time="14.726"/>
+  <testcase name="helloSerial" classname="org.espsketchide.buildengine.SketchPreprocessorGoldenTest" time="1.692"/>
+  <testcase name="analogReadSerial" classname="org.espsketchide.buildengine.SketchPreprocessorGoldenTest" time="1.675"/>
+  <testcase name="wifiAccessPointLed" classname="org.espsketchide.buildengine.SketchPreprocessorGoldenTest" time="24.929"/>
+  <testcase name="bleScan" classname="org.espsketchide.buildengine.SketchPreprocessorGoldenTest" time="23.573"/>
+  <testcase name="fade" classname="org.espsketchide.buildengine.SketchPreprocessorGoldenTest" time="1.767"/>
+  <testcase name="blink" classname="org.espsketchide.buildengine.SketchPreprocessorGoldenTest" time="1.574"/>
   <system-out><![CDATA[]]></system-out>
   <system-err><![CDATA[]]></system-err>
 </testsuite>

@@ -18,7 +18,11 @@ class SketchPreprocessorGoldenTest {
         val merged = SketchPreprocessor.merge(inoFiles)
         val mergedFile = File.createTempFile("merged", ".cpp").apply { writeText(merged); deleteOnExit() }
         val output = File.createTempFile("preprocessed", ".cpp").apply { deleteOnExit() }
-        val includes = listOf(File(props.expanded("build.core.path")), File(props.expanded("build.variant.path")))
+        val base = listOf(File(props.expanded("build.core.path")), File(props.expanded("build.variant.path")))
+        // Preprocessing needs the libraries' include folders, as in arduino-cli (discovery first).
+        val libraries = Library.scan(File(platform.dir, "libraries"), LibraryLocation.PLATFORM)
+        val includes = IncludeDiscovery(props, LibraryResolver(libraries, platform.arch), LocalProcessRunner(), buildDir)
+            .discover(listOf(mergedFile), base).includeDirs
         val argv = Recipes.preprocess(props, mergedFile, output, includes)
         val process = ProcessBuilder(argv).redirectErrorStream(true).start()
         val log = process.inputStream.bufferedReader().readText()
@@ -34,4 +38,7 @@ class SketchPreprocessorGoldenTest {
     @Test fun analogReadSerial() = check("AnalogReadSerial")
     @Test fun button() = check("Button")
     @Test fun fade() = check("Fade")
+    @Test fun wifiScan() = check("WiFiScan")
+    @Test fun wifiAccessPointLed() = check("WiFiAccessPointLed")
+    @Test fun bleScan() = check("BLEScan")
 }
