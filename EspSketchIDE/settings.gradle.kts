@@ -18,6 +18,7 @@ dependencyResolutionManagement {
 rootProject.name = "EspSketchIDE"
 include(":app")
 include(":esptool")
+include(":buildengine")
 
 // P0 spike app, built only on request: ./gradlew -Pspike :spike-execprobe:assembleDebug
 if (providers.gradleProperty("spike").isPresent) {

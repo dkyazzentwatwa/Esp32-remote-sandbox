@@ -26,7 +26,7 @@ jobs:
           java-version: "17"
       - uses: gradle/actions/setup-gradle@v4
       - name: Unit tests
-        run: ./gradlew :app:testDebugUnitTest
+        run: ./gradlew :app:testDebugUnitTest :esptool:test
       - name: Lint
         run: ./gradlew :app:lintDebug
       - name: Debug APK
@@ -38,6 +38,7 @@ jobs:
           path: |
             EspSketchIDE/app/build/reports/
             EspSketchIDE/app/build/test-results/
+            EspSketchIDE/esptool/build/test-results/
       - uses: actions/upload-artifact@v4
         with:
           name: app-debug

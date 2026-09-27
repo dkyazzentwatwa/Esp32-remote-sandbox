@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="org.espsketchide.buildengine.BuildPropertiesGoldenTest" tests="2" skipped="0" failures="0" errors="0" timestamp="2026-09-27T07:32:53.728Z" hostname="vm" time="1.111">
+  <properties/>
+  <testcase name="defaultEsp32DevModule" classname="org.espsketchide.buildengine.BuildPropertiesGoldenTest" time="0.611"/>
+  <testcase name="withPartitionAndDebugMenus" classname="org.espsketchide.buildengine.BuildPropertiesGoldenTest" time="0.496"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>
