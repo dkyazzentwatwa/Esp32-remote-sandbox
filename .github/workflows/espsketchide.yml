@@ -1,0 +1,73 @@
+name: EspSketchIDE
+
+on:
+  push:
+    branches: [main]
+    paths: ["EspSketchIDE/**", ".github/workflows/espsketchide.yml"]
+  pull_request:
+    paths: ["EspSketchIDE/**", ".github/workflows/espsketchide.yml"]
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    working-directory: EspSketchIDE
+
+jobs:
+  build:
+    name: Unit tests, lint, debug APK
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Unit tests
+        run: ./gradlew :app:testDebugUnitTest
+      - name: Lint
+        run: ./gradlew :app:lintDebug
+      - name: Debug APK
+        run: ./gradlew :app:assembleDebug
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: reports
+          path: |
+            EspSketchIDE/app/build/reports/
+            EspSketchIDE/app/build/test-results/
+      - uses: actions/upload-artifact@v4
+        with:
+          name: app-debug
+          path: EspSketchIDE/app/build/outputs/apk/debug/app-debug.apk
+
+  examples:
+    name: Bundled examples compile (arduino-cli)
+    runs-on: ubuntu-24.04
+    env:
+      ESP32_CORE: "3.3.12"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/cache@v4
+        with:
+          path: ~/.arduino15
+          key: arduino15-esp32-${{ env.ESP32_CORE }}
+      - name: Install arduino-cli and the ESP32 core
+        run: |
+          curl -fsSL https://downloads.arduino.cc/arduino-cli/arduino-cli_latest_Linux_64bit.tar.gz | tar xz -C "$RUNNER_TEMP" arduino-cli
+          echo "$RUNNER_TEMP" >> "$GITHUB_PATH"
+          "$RUNNER_TEMP/arduino-cli" config init --overwrite
+          "$RUNNER_TEMP/arduino-cli" config set board_manager.additional_urls https://espressif.github.io/arduino-esp32/package_esp32_index.json
+          "$RUNNER_TEMP/arduino-cli" core update-index
+          "$RUNNER_TEMP/arduino-cli" core install "esp32:esp32@$ESP32_CORE"
+      - name: Compile every example for ESP32 Dev Module
+        run: |
+          status=0
+          for dir in app/src/main/assets/examples/*/*/; do
+            echo "::group::$dir"
+            arduino-cli compile --fqbn esp32:esp32:esp32 "$dir" || status=1
+            echo "::endgroup::"
+          done
+          exit $status

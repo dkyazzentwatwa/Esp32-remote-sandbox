@@ -1,0 +1,53 @@
+name: EspSketchIDE release
+
+# Push a tag like espsketchide-v0.0.2 to build signed APKs into a draft GitHub Release.
+on:
+  push:
+    tags: ["espsketchide-v*"]
+
+permissions:
+  contents: write
+
+defaults:
+  run:
+    working-directory: EspSketchIDE
+
+jobs:
+  release:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Tests and lint
+        run: ./gradlew :app:testDebugUnitTest :app:lintRelease
+      - name: Decode signing key
+        env:
+          RELEASE_KEYSTORE_B64: ${{ secrets.RELEASE_KEYSTORE_B64 }}
+        run: |
+          if [ -z "$RELEASE_KEYSTORE_B64" ]; then
+            echo "::error::RELEASE_KEYSTORE_B64 secret is not set; refusing to publish an unsigned release."
+            exit 1
+          fi
+          echo "$RELEASE_KEYSTORE_B64" | base64 -d > "$RUNNER_TEMP/release.jks"
+          echo "RELEASE_KEYSTORE_PATH=$RUNNER_TEMP/release.jks" >> "$GITHUB_ENV"
+      - name: Signed release APK
+        env:
+          RELEASE_KEYSTORE_PASSWORD: ${{ secrets.RELEASE_KEYSTORE_PASSWORD }}
+          RELEASE_KEY_ALIAS: ${{ secrets.RELEASE_KEY_ALIAS }}
+          RELEASE_KEY_PASSWORD: ${{ secrets.RELEASE_KEY_PASSWORD }}
+        run: ./gradlew :app:assembleRelease
+      - name: Draft GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.ref_name }}
+        run: |
+          version="${TAG#espsketchide-v}"
+          mkdir -p dist
+          cp app/build/outputs/apk/release/app-release.apk "dist/EspSketchIDE-$version.apk"
+          (cd dist && sha256sum *.apk > SHA256SUMS.txt)
+          gh release create "$TAG" dist/* --draft --title "EspSketchIDE $version" \
+            --notes "Draft: edit these notes before publishing. See EspSketchIDE/README.md for what this version can and cannot do."
