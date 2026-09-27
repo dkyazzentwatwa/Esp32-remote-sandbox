@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.EditText
+import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
@@ -24,6 +25,7 @@ import org.espsketchide.app.editor.EditorEvent
 import org.espsketchide.app.editor.EditorUiState
 import org.espsketchide.app.editor.EditorViewModel
 import org.espsketchide.app.model.Sketch
+import org.espsketchide.app.ui.Insets
 import org.espsketchide.app.model.SketchFile
 
 class EditorActivity : AppCompatActivity() {
@@ -47,9 +49,12 @@ class EditorActivity : AppCompatActivity() {
     private var renderingTabs = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        enableEdgeToEdge()
         super.onCreate(savedInstanceState)
         binding = ActivityEditorBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        Insets.applyToAppBar(binding.appBar)
+        Insets.applyBottomIncludingKeyboard(binding.root)
 
         val sketchName = intent.getStringExtra(EXTRA_SKETCH_NAME)
         val folderId = intent.getStringExtra(EXTRA_SKETCH_FOLDER_ID)

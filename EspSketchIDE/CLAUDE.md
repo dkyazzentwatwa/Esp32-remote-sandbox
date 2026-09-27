@@ -10,7 +10,7 @@ Status is early alpha (M0–M2 of the roadmap in `README.md`): sketch management
 
 ## Build
 
-Needs JDK 17+ and the Android SDK (compileSdk/targetSdk 34, minSdk 26). Uses Gradle 8.7 through the wrapper, AGP 8.5.2, and Kotlin 2.1.21.
+Needs JDK 17+ (the cloud container has 21) and the Android SDK: compileSdk 37 (required by current AndroidX), targetSdk 36 (Google Play's requirement since 2026-08-31), minSdk 26. Uses Gradle 9.8.0 through the wrapper and AGP 9.4.1 with AGP's built-in Kotlin support (Kotlin 2.2.10). Do not apply `org.jetbrains.kotlin.android` or add a `kotlinOptions` block; AGP 9 rejects both. In cloud sessions `.claude/hooks/session-start.sh` installs the SDK and points Gradle at Google's Maven Central mirror.
 
 ```bash
 ./gradlew :app:assembleDebug        # APK -> app/build/outputs/apk/debug/app-debug.apk
@@ -18,7 +18,7 @@ Needs JDK 17+ and the Android SDK (compileSdk/targetSdk 34, minSdk 26). Uses Gra
 ./gradlew :app:lint
 ```
 
-The project has no unit or instrumented tests yet (there is no `app/src/test` or `app/src/androidTest`). JUnit4 and Espresso are declared as dependencies. When you add tests, run a single one like this: `./gradlew :app:testDebugUnitTest --tests "org.espsketchide.app.SomeTest"`.
+JVM unit tests live in `app/src/test` (JUnit4 + Truth + kotlinx-coroutines-test). Run them all with `./gradlew :app:testDebugUnitTest`, or one class with `./gradlew :app:testDebugUnitTest --tests "org.espsketchide.app.data.SketchRepositoryTest"`. There are no instrumented tests yet.
 
 ## Architecture
 

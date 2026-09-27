@@ -9,6 +9,7 @@ import android.view.View
 import android.widget.EditText
 import android.widget.PopupMenu
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
@@ -24,6 +25,7 @@ import org.espsketchide.app.databinding.ActivitySketchListBinding
 import org.espsketchide.app.model.Sketch
 import org.espsketchide.app.sketches.SketchListUiState
 import org.espsketchide.app.sketches.SketchListViewModel
+import org.espsketchide.app.ui.Insets
 import org.espsketchide.app.ui.SketchAdapter
 
 class SketchListActivity : AppCompatActivity() {
@@ -51,9 +53,13 @@ class SketchListActivity : AppCompatActivity() {
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        enableEdgeToEdge()
         super.onCreate(savedInstanceState)
         binding = ActivitySketchListBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        Insets.applyToAppBar(binding.appBar)
+        Insets.applyBottomPadding(binding.sketchRecyclerView)
+        Insets.applyBottomMargin(binding.newSketchFab)
         setSupportActionBar(binding.toolbar)
 
         adapter = SketchAdapter(

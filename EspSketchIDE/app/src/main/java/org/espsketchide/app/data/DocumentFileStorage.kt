@@ -3,6 +3,8 @@ package org.espsketchide.app.data
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import androidx.core.content.edit
+import androidx.core.net.toUri
 import androidx.documentfile.provider.DocumentFile
 import java.io.IOException
 
@@ -20,7 +22,7 @@ class DocumentFileStorage(context: Context) : SketchStorage {
 
     fun rootUri(): Uri? {
         val stored = prefs.getString(KEY_ROOT_URI, null) ?: return null
-        val uri = Uri.parse(stored)
+        val uri = stored.toUri()
         val stillGranted = context.contentResolver.persistedUriPermissions.any {
             it.uri == uri && it.isReadPermission && it.isWritePermission
         }
@@ -32,7 +34,7 @@ class DocumentFileStorage(context: Context) : SketchStorage {
             treeUri,
             Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
         )
-        prefs.edit().putString(KEY_ROOT_URI, treeUri.toString()).apply()
+        prefs.edit { putString(KEY_ROOT_URI, treeUri.toString()) }
     }
 
     override fun root(): StorageNode? {
@@ -59,19 +61,19 @@ class DocumentFileStorage(context: Context) : SketchStorage {
     override fun delete(node: StorageNode): Boolean = document(node)?.delete() ?: false
 
     override fun read(node: StorageNode): String {
-        val input = context.contentResolver.openInputStream(Uri.parse(node.id))
+        val input = context.contentResolver.openInputStream(node.id.toUri())
             ?: throw IOException("Could not open ${node.name} for reading")
         return input.bufferedReader().use { it.readText() }
     }
 
     override fun write(node: StorageNode, content: String) {
-        val output = context.contentResolver.openOutputStream(Uri.parse(node.id), "wt")
+        val output = context.contentResolver.openOutputStream(node.id.toUri(), "wt")
             ?: throw IOException("Could not open ${node.name} for writing")
         output.bufferedWriter().use { it.write(content) }
     }
 
     private fun document(node: StorageNode): DocumentFile? =
-        DocumentFile.fromTreeUri(context, Uri.parse(node.id))
+        DocumentFile.fromTreeUri(context, node.id.toUri())
 
     private fun DocumentFile.toNode(): StorageNode? {
         val name = name ?: return null

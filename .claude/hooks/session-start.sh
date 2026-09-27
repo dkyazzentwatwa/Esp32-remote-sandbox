@@ -23,7 +23,7 @@ fi
 # Idempotent: sdkmanager skips packages that are already installed.
 yes | "$SDK/cmdline-tools/latest/bin/sdkmanager" --sdk_root="$SDK" --licenses >/dev/null 2>&1 || true
 "$SDK/cmdline-tools/latest/bin/sdkmanager" --sdk_root="$SDK" \
-  "platform-tools" "platforms;android-34" "platforms;android-36" "build-tools;35.0.0" >/dev/null
+  "platform-tools" "platforms;android-36" "platforms;android-37.0" "build-tools;36.0.0" >/dev/null
 
 echo "sdk.dir=$SDK" > "$APP_DIR/local.properties"
 echo "export ANDROID_HOME=\"$SDK\"" >> "$CLAUDE_ENV_FILE"
