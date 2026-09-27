@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="org.espsketchide.buildengine.esp32.PackBuildTest" tests="1" skipped="0" failures="0" errors="0" timestamp="2026-09-27T08:20:52.401Z" hostname="vm" time="166.263">
+  <properties/>
+  <testcase name="everyExampleBuildsFromThePack" classname="org.espsketchide.buildengine.esp32.PackBuildTest" time="166.259"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

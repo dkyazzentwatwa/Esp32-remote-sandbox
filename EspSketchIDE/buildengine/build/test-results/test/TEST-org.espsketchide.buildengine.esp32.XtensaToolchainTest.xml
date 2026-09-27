@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="org.espsketchide.buildengine.esp32.XtensaToolchainTest" tests="2" skipped="0" failures="0" errors="0" timestamp="2026-09-27T08:02:35.236Z" hostname="vm" time="8.955">
-  <properties/>
-  <testcase name="rewritesChipWrappersToRelocatedUnifiedTools" classname="org.espsketchide.buildengine.esp32.XtensaToolchainTest" time="0.059"/>
-  <testcase name="builderWorksThroughTheRelocatedLayout" classname="org.espsketchide.buildengine.esp32.XtensaToolchainTest" time="8.89"/>
-  <system-out><![CDATA[]]></system-out>
-  <system-err><![CDATA[]]></system-err>
-</testsuite>

@@ -1,0 +1,94 @@
+name: EspSketchIDE toolchain and board pack
+
+# Builds the Android-hosted xtensa toolchain (both ABIs) and the ESP32 board pack, and attaches
+# them to a GitHub Release. Run manually, or push a tag like espsketchide-toolchain-2601-1.
+on:
+  workflow_dispatch:
+  push:
+    tags: ["espsketchide-toolchain-*"]
+
+permissions:
+  contents: write
+
+env:
+  NDK_VERSION: "29.0.14206865"
+  ESP32_CORE: "3.3.12"
+
+jobs:
+  toolchain:
+    strategy:
+      matrix:
+        abi: [arm64-v8a, armeabi-v7a]
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build tools
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq flex bison texinfo
+      - name: Android NDK
+        run: |
+          yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "ndk;$NDK_VERSION" > /dev/null
+          echo "ANDROID_NDK_HOME=$ANDROID_HOME/ndk/$NDK_VERSION" >> "$GITHUB_ENV"
+      - name: Espressif desktop toolchain (build-machine compiler for the canadian cross)
+        run: |
+          curl -fsSL https://downloads.arduino.cc/arduino-cli/arduino-cli_latest_Linux_64bit.tar.gz | tar xz -C "$RUNNER_TEMP" arduino-cli
+          "$RUNNER_TEMP/arduino-cli" config init --overwrite
+          "$RUNNER_TEMP/arduino-cli" config set board_manager.additional_urls https://espressif.github.io/arduino-esp32/package_esp32_index.json
+          "$RUNNER_TEMP/arduino-cli" core update-index
+          "$RUNNER_TEMP/arduino-cli" core install "esp32:esp32@$ESP32_CORE"
+          echo "BUILD_XTENSA_BIN=$(ls -d ~/.arduino15/packages/esp32/tools/esp-x32/*/bin)" >> "$GITHUB_ENV"
+      - name: Build
+        working-directory: EspSketchIDE
+        run: WORK="$RUNNER_TEMP/tc" toolchain/build-android.sh ${{ matrix.abi }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: toolchain-${{ matrix.abi }}
+          path: ${{ runner.temp }}/tc/out/*.tar.xz
+
+  pack:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install the ESP32 core
+        run: |
+          curl -fsSL https://downloads.arduino.cc/arduino-cli/arduino-cli_latest_Linux_64bit.tar.gz | tar xz -C "$RUNNER_TEMP" arduino-cli
+          "$RUNNER_TEMP/arduino-cli" config init --overwrite
+          "$RUNNER_TEMP/arduino-cli" config set board_manager.additional_urls https://espressif.github.io/arduino-esp32/package_esp32_index.json
+          "$RUNNER_TEMP/arduino-cli" core update-index
+          "$RUNNER_TEMP/arduino-cli" core install "esp32:esp32@$ESP32_CORE"
+      - name: Build the pack
+        working-directory: EspSketchIDE
+        run: python3 toolchain/make-pack.py --core "$ESP32_CORE" --out "$RUNNER_TEMP/pack/esp32-$ESP32_CORE" --archive
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Every example builds from the pack alone
+        working-directory: EspSketchIDE
+        run: |
+          echo "$RUNNER_TEMP/arduino-cli" > /dev/null
+          PATH="$RUNNER_TEMP:$PATH" buildengine/golden/make-reference.sh "$RUNNER_TEMP/golden"
+          ESP32_PACK_DIR="$RUNNER_TEMP/pack/esp32-$ESP32_CORE" ESP32_REFERENCE_DIR="$RUNNER_TEMP/golden" \
+            ./gradlew :buildengine:test --tests '*PackBuildTest*'
+      - uses: actions/upload-artifact@v4
+        with:
+          name: pack-esp32
+          path: ${{ runner.temp }}/pack/*.tar.xz
+
+  release:
+    if: startsWith(github.ref, 'refs/tags/')
+    needs: [toolchain, pack]
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+      - name: Draft release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.ref_name }}
+        run: |
+          cd dist && sha256sum *.tar.xz > SHA256SUMS.txt
+          gh release create "$TAG" * --repo "$GITHUB_REPOSITORY" --draft --title "EspSketchIDE toolchain $TAG" \
+            --notes "Android-hosted xtensa-esp-elf toolchain (GPL-3.0; sources: espressif/gcc and espressif/binutils-gdb at the refs in VERSIONS, build script EspSketchIDE/toolchain/build-android.sh) and the ESP32 board pack."
