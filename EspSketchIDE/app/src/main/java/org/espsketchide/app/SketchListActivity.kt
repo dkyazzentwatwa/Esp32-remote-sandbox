@@ -19,6 +19,7 @@ import org.espsketchide.app.data.SketchNameInvalidException
 import org.espsketchide.app.data.SketchRepository
 import org.espsketchide.app.databinding.ActivitySketchListBinding
 import org.espsketchide.app.model.Sketch
+import org.espsketchide.app.settings.SettingsActivity
 import org.espsketchide.app.ui.SketchAdapter
 
 class SketchListActivity : AppCompatActivity() {
@@ -74,11 +75,17 @@ class SketchListActivity : AppCompatActivity() {
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        if (item.itemId == R.id.action_change_folder) {
-            pickRootFolder.launch(null)
-            return true
+        return when (item.itemId) {
+            R.id.action_change_folder -> {
+                pickRootFolder.launch(null)
+                true
+            }
+            R.id.action_settings -> {
+                startActivity(Intent(this, SettingsActivity::class.java))
+                true
+            }
+            else -> super.onOptionsItemSelected(item)
         }
-        return super.onOptionsItemSelected(item)
     }
 
     private fun refreshSketchList() {

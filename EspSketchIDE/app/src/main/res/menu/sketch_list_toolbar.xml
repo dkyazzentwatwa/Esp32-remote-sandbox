@@ -3,6 +3,10 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <item
         android:id="@+id/action_change_folder"
-        android:title="@string/action_open_folder"
+        android:title="@string/action_change_folder"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/action_settings"
+        android:title="@string/action_settings"
         app:showAsAction="never" />
 </menu>

@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <PreferenceCategory
+        app:iconSpaceReserved="false"
+        app:title="@string/settings_category_appearance">
+        <ListPreference
+            app:defaultValue="dark"
+            app:entries="@array/theme_entries"
+            app:entryValues="@array/theme_values"
+            app:iconSpaceReserved="false"
+            app:key="theme"
+            app:title="@string/settings_theme"
+            app:useSimpleSummaryProvider="true" />
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        app:iconSpaceReserved="false"
+        app:title="@string/settings_category_editor">
+        <SeekBarPreference
+            android:max="24"
+            app:defaultValue="14"
+            app:iconSpaceReserved="false"
+            app:key="editor_font_size"
+            app:min="10"
+            app:showSeekBarValue="true"
+            app:title="@string/settings_font_size" />
+        <SwitchPreferenceCompat
+            app:defaultValue="false"
+            app:iconSpaceReserved="false"
+            app:key="word_wrap"
+            app:summary="@string/settings_word_wrap_summary"
+            app:title="@string/settings_word_wrap" />
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        app:iconSpaceReserved="false"
+        app:title="@string/settings_category_about">
+        <Preference
+            app:iconSpaceReserved="false"
+            app:key="licenses"
+            app:summary="@string/settings_licenses_summary"
+            app:title="@string/settings_licenses" />
+    </PreferenceCategory>
+</PreferenceScreen>

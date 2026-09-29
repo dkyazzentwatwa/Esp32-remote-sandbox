@@ -52,6 +52,7 @@ dependencies {
     implementation("androidx.activity:activity-ktx:1.9.1")
     implementation("androidx.fragment:fragment-ktx:1.8.2")
     implementation("androidx.documentfile:documentfile:1.0.1")
+    implementation("androidx.preference:preference-ktx:1.2.1")
 
     // Code editor with syntax highlighting (M2) — MIT licensed, actively maintained.
     // language-java's tokenizer/highlighter is reused as a stand-in for C/C++/Arduino

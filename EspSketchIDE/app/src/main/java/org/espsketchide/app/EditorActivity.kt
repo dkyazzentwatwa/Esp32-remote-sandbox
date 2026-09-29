@@ -1,5 +1,6 @@
 package org.espsketchide.app
 
+import android.content.Intent
 import android.content.res.Configuration
 import android.net.Uri
 import android.os.Bundle
@@ -20,6 +21,7 @@ import org.espsketchide.app.data.SketchRepository
 import org.espsketchide.app.databinding.ActivityEditorBinding
 import org.espsketchide.app.model.Sketch
 import org.espsketchide.app.model.SketchFile
+import org.espsketchide.app.settings.SettingsActivity
 
 class EditorActivity : AppCompatActivity() {
 
@@ -123,6 +125,10 @@ class EditorActivity : AppCompatActivity() {
             }
             R.id.action_add_file -> {
                 promptAddFile()
+                true
+            }
+            R.id.action_settings -> {
+                startActivity(Intent(this, SettingsActivity::class.java))
                 true
             }
             else -> super.onOptionsItemSelected(item)
