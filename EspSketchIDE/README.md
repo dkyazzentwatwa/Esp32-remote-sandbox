@@ -13,22 +13,24 @@ This is the first milestone of an incremental build-out. What works today:
 - ✅ Sketch management: create, rename, delete sketches (folders backed by
   the Storage Access Framework, following the Arduino convention that a
   sketch folder's name matches its primary `.ino` file).
-- ✅ Multi-file editor with tabs per sketch, syntax highlighting, and
-  save-on-switch/save-on-exit.
+- ✅ Multi-file editor with tabs per sketch, Arduino/C++ syntax highlighting,
+  JetBrains Mono, and save-on-switch/save-on-exit.
+- ✅ Dark-by-default IDE theme (Light / Dark / Follow system) and a Settings
+  screen for theme, editor font size, and word wrap.
 - 🚧 **Compiling and uploading sketches is not implemented yet.** See
   Roadmap below — this is deliberately not stubbed in as a fake button,
   so the app only claims to do what it actually does.
 
 ### About the syntax highlighting
 
-The editor currently reuses [sora-editor](https://github.com/Rosemoe/sora-editor)'s
-bundled `language-java` tokenizer rather than a purpose-built C/C++/Arduino
-grammar. Since C/C++ and Java share the same brace/statement/comment/string
-syntax, braces, comments, strings, numbers, and most common keywords
-(`if`, `else`, `for`, `while`, `return`, `void`, `int`, …) highlight
-correctly. Arduino/C-specific things like `#include` preprocessor lines and
-fixed-width types (`uint8_t`, etc.) are not specially colored yet — see
-the roadmap.
+The editor uses [sora-editor](https://github.com/Rosemoe/sora-editor)'s
+TextMate engine with Visual Studio Code's C/C++ grammar, so preprocessor
+lines (`#include`, `#define`), fixed-width types (`uint8_t`), strings,
+comments, and numbers are highlighted like in a desktop editor. A small
+Arduino grammar (`app/src/main/assets/textmate/arduino.tmLanguage.json`)
+is injected on top to color the Arduino/ESP API: functions such as
+`pinMode` and `digitalWrite`, constants such as `HIGH` and `LED_BUILTIN`,
+and classes such as `Serial` and `WiFi`.
 
 ## Roadmap
 
@@ -64,4 +66,7 @@ The resulting APK is at `app/build/outputs/apk/debug/app-debug.apk`.
 
 ## License
 
-MIT — see [LICENSE](LICENSE).
+MIT — see [LICENSE](LICENSE). Bundled third-party grammars, fonts, icons, and
+libraries are listed in
+[app/src/main/assets/licenses/NOTICES.md](app/src/main/assets/licenses/NOTICES.md)
+and in the app under Settings → Open-source licenses.
