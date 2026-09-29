@@ -45,4 +45,25 @@
     <string name="settings_category_about">About</string>
     <string name="settings_licenses">Open-source licenses</string>
     <string name="settings_licenses_summary">Third-party code, fonts and icons in this app</string>
+
+    <string name="settings_category_board">Board</string>
+    <string name="settings_board">Board</string>
+    <string name="settings_board_summary">%1$s · used for examples, templates and autocomplete only</string>
+    <string name="settings_show_symbol_bar">Symbol bar</string>
+    <string name="settings_show_symbol_bar_summary">Show a row of code symbols above the keyboard</string>
+
+    <string name="action_undo">Undo</string>
+    <string name="action_redo">Redo</string>
+    <string name="action_search">Find and replace</string>
+    <string name="nothing_to_save">No changes</string>
+    <string name="search_hint">Find</string>
+    <string name="replace_hint">Replace with</string>
+    <string name="search_no_results">0 results</string>
+    <string name="search_match_case">Match case</string>
+    <string name="search_previous">Previous match</string>
+    <string name="search_next">Next match</string>
+    <string name="search_close">Close search</string>
+    <string name="search_toggle_replace">Show replace</string>
+    <string name="action_replace">Replace</string>
+    <string name="action_replace_all">Replace all</string>
 </resources>

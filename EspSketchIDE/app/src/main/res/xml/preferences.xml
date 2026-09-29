@@ -17,6 +17,18 @@
 
     <PreferenceCategory
         app:iconSpaceReserved="false"
+        app:title="@string/settings_category_board">
+        <ListPreference
+            app:defaultValue="esp32"
+            app:entries="@array/board_entries"
+            app:entryValues="@array/board_values"
+            app:iconSpaceReserved="false"
+            app:key="board"
+            app:title="@string/settings_board" />
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        app:iconSpaceReserved="false"
         app:title="@string/settings_category_editor">
         <SeekBarPreference
             android:max="24"
@@ -32,6 +44,12 @@
             app:key="word_wrap"
             app:summary="@string/settings_word_wrap_summary"
             app:title="@string/settings_word_wrap" />
+        <SwitchPreferenceCompat
+            app:defaultValue="true"
+            app:iconSpaceReserved="false"
+            app:key="show_symbol_bar"
+            app:summary="@string/settings_show_symbol_bar_summary"
+            app:title="@string/settings_show_symbol_bar" />
     </PreferenceCategory>
 
     <PreferenceCategory

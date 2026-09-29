@@ -41,6 +41,11 @@ class SettingsFragment : PreferenceFragmentCompat() {
             AppCompatDelegate.setDefaultNightMode(ThemeMode.fromKey(newValue as String).nightMode)
             true
         }
+        // useSimpleSummaryProvider would drop the "not for building" note, so build the summary here.
+        findPreference<ListPreference>(KEY_BOARD)?.setSummaryProvider { pref ->
+            val board = (pref as ListPreference).entry ?: getString(R.string.board_esp32)
+            getString(R.string.settings_board_summary, board)
+        }
         findPreference<Preference>(KEY_LICENSES)?.setOnPreferenceClickListener {
             MaterialAlertDialogBuilder(requireContext())
                 .setTitle(R.string.settings_licenses)

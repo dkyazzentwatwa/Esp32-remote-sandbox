@@ -25,4 +25,12 @@ class AppSettingsTest {
         assertEquals(14, EditorFontSize.clamp(14))
         assertEquals(24, EditorFontSize.clamp(99))
     }
+
+    @Test
+    fun `board keys map to boards and default to esp32`() {
+        assertEquals(Board.ESP32, Board.fromKey("esp32"))
+        assertEquals(Board.ESP8266, Board.fromKey("esp8266"))
+        assertEquals(Board.ESP32, Board.fromKey(null))
+        assertEquals(Board.ESP32, Board.fromKey("uno"))
+    }
 }
