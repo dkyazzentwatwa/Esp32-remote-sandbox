@@ -93,7 +93,7 @@ class EditorActivity : AppCompatActivity() {
         if (!ok || isDestroyed) return
         highlightingAvailable = true
         binding.codeEditor.colorScheme = EditorLanguages.colorScheme(isDarkMode)
-        currentFile?.let { binding.codeEditor.setEditorLanguage(EditorLanguages.languageFor(it.name)) }
+        currentFile?.let { binding.codeEditor.setEditorLanguage(EditorLanguages.languageFor(it.name, settings.board)) }
     }
 
     /** Font size and word wrap can change in Settings while this screen is in the back stack. */
@@ -120,7 +120,7 @@ class EditorActivity : AppCompatActivity() {
     private fun loadFile(file: SketchFile) {
         currentFile = file
         binding.codeEditor.setEditorLanguage(
-            if (highlightingAvailable) EditorLanguages.languageFor(file.name) else EmptyLanguage()
+            if (highlightingAvailable) EditorLanguages.languageFor(file.name, settings.board) else EmptyLanguage()
         )
         binding.codeEditor.setText(repository.readFile(file.uri))
     }

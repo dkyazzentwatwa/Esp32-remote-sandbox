@@ -15,6 +15,7 @@ import io.github.rosemoe.sora.langs.textmate.registry.ThemeRegistry
 import io.github.rosemoe.sora.langs.textmate.registry.model.ThemeModel
 import io.github.rosemoe.sora.langs.textmate.registry.provider.AssetsFileResolver
 import io.github.rosemoe.sora.widget.schemes.EditorColorScheme
+import org.espsketchide.app.settings.Board
 import org.eclipse.tm4e.core.grammar.IStateStack
 import org.eclipse.tm4e.core.registry.IThemeSource
 import java.util.concurrent.ExecutionException
@@ -78,12 +79,13 @@ object EditorLanguages {
     }
 
     /** Highlighted Arduino/C++ language for sketch sources, plain text otherwise. Call after [awaitReady] returned true. */
-    fun languageFor(fileName: String): Language {
+    fun languageFor(fileName: String, board: Board): Language {
         val extension = fileName.substringAfterLast('.', "").lowercase()
         if (extension !in HIGHLIGHTED_EXTENSIONS) return EmptyLanguage()
         return TextMateLanguage.create(ARDUINO_SCOPE, true).apply {
             tabSize = TAB_SIZE
             useTab(false)
+            setCompleterKeywords(ArduinoApi.keywordsFor(board).toTypedArray())
         }
     }
 
