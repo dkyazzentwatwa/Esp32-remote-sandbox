@@ -61,6 +61,8 @@ dependencies {
     implementation("io.github.Rosemoe.sora-editor:language-textmate:0.23.6")
 
     testImplementation("junit:junit:4.13.2")
+    // Android's org.json is a stub on the JVM; ExampleCatalog parses with it.
+    testImplementation("org.json:json:20240303")
     androidTestImplementation("androidx.test.ext:junit:1.2.1")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.6.1")
 }
