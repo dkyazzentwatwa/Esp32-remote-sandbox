@@ -2,7 +2,7 @@
     <string name="app_name">EspSketchIDE</string>
 
     <string name="sketch_list_title">My Sketches</string>
-    <string name="sketch_list_empty">No sketches yet. Tap + to create one, or open an existing sketch folder.</string>
+    <string name="sketch_list_empty">No sketches yet. Tap + to create one, or start from an example.</string>
     <string name="action_new_sketch">New sketch</string>
     <string name="action_rename">Rename</string>
     <string name="action_delete">Delete</string>
@@ -67,4 +67,16 @@
     <string name="search_toggle_replace">Show replace</string>
     <string name="action_replace">Replace</string>
     <string name="action_replace_all">Replace all</string>
+
+    <string name="action_examples">Examples</string>
+    <string name="browse_examples">Browse examples</string>
+    <string name="examples_title">Examples</string>
+    <string name="examples_subtitle">%1$s · change in Settings</string>
+    <string name="dialog_open_example_title">Open as new sketch</string>
+    <string name="error_create_failed">Could not create the sketch.</string>
+    <string name="dialog_new_sketch_hint">Sketch name</string>
+    <string name="dialog_new_sketch_template">Template</string>
+    <string name="template_bare">Bare minimum</string>
+    <string name="template_serial">Serial</string>
+    <string name="template_wifi_station">WiFi station</string>
 </resources>

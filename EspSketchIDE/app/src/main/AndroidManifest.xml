@@ -28,6 +28,11 @@
             android:windowSoftInputMode="adjustResize" />
 
         <activity
+            android:name=".examples.ExamplesActivity"
+            android:exported="false"
+            android:label="@string/examples_title" />
+
+        <activity
             android:name=".settings.SettingsActivity"
             android:exported="false"
             android:label="@string/settings_title" />

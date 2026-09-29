@@ -6,6 +6,7 @@ import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
+import android.widget.ArrayAdapter
 import android.widget.EditText
 import android.widget.PopupMenu
 import android.widget.Toast
@@ -18,8 +19,12 @@ import org.espsketchide.app.data.SketchAlreadyExistsException
 import org.espsketchide.app.data.SketchNameInvalidException
 import org.espsketchide.app.data.SketchRepository
 import org.espsketchide.app.databinding.ActivitySketchListBinding
+import org.espsketchide.app.databinding.DialogNewSketchBinding
+import org.espsketchide.app.examples.ExamplesActivity
 import org.espsketchide.app.model.Sketch
+import org.espsketchide.app.settings.AppSettings
 import org.espsketchide.app.settings.SettingsActivity
+import org.espsketchide.app.templates.SketchTemplates
 import org.espsketchide.app.ui.SketchAdapter
 
 class SketchListActivity : AppCompatActivity() {
@@ -58,6 +63,7 @@ class SketchListActivity : AppCompatActivity() {
         )
 
         binding.newSketchFab.setOnClickListener { promptNewSketch() }
+        binding.browseExamplesButton.setOnClickListener { openExamples() }
 
         if (!repository.hasRoot()) {
             pickRootFolder.launch(null)
@@ -76,6 +82,10 @@ class SketchListActivity : AppCompatActivity() {
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
+            R.id.action_examples -> {
+                openExamples()
+                true
+            }
             R.id.action_change_folder -> {
                 pickRootFolder.launch(null)
                 true
@@ -88,16 +98,20 @@ class SketchListActivity : AppCompatActivity() {
         }
     }
 
+    private fun openExamples() {
+        startActivity(Intent(this, ExamplesActivity::class.java))
+    }
+
     private fun refreshSketchList() {
         if (!repository.hasRoot()) {
-            binding.emptyStateText.visibility = View.VISIBLE
+            binding.emptyState.visibility = View.VISIBLE
             binding.emptyStateText.text = getString(R.string.error_no_storage_access)
             adapter.submitList(emptyList())
             return
         }
         val sketches = repository.listSketches()
         adapter.submitList(sketches)
-        binding.emptyStateText.visibility = if (sketches.isEmpty()) View.VISIBLE else View.GONE
+        binding.emptyState.visibility = if (sketches.isEmpty()) View.VISIBLE else View.GONE
         if (sketches.isEmpty()) {
             binding.emptyStateText.text = getString(R.string.sketch_list_empty)
         }
@@ -135,20 +149,31 @@ class SketchListActivity : AppCompatActivity() {
             pickRootFolder.launch(null)
             return
         }
-        val input = EditText(this)
+        val dialog = DialogNewSketchBinding.inflate(layoutInflater)
+        val labels = SketchTemplates.ids.map { getString(templateLabel(it)) }
+        var selectedTemplate = 0
+        dialog.templateDropdown.setAdapter(ArrayAdapter(this, android.R.layout.simple_dropdown_item_1line, labels))
+        dialog.templateDropdown.setText(labels[selectedTemplate], false)
+        dialog.templateDropdown.setOnItemClickListener { _, _, position, _ -> selectedTemplate = position }
         AlertDialog.Builder(this)
             .setTitle(R.string.dialog_new_sketch_title)
-            .setView(input)
+            .setView(dialog.root)
             .setPositiveButton(R.string.dialog_ok) { _, _ ->
-                createSketch(input.text.toString().trim())
+                createSketch(dialog.sketchNameInput.text.toString().trim(), SketchTemplates.ids[selectedTemplate])
             }
             .setNegativeButton(R.string.dialog_cancel, null)
             .show()
     }
 
-    private fun createSketch(name: String) {
+    private fun templateLabel(templateId: String): Int = when (templateId) {
+        SketchTemplates.SERIAL -> R.string.template_serial
+        SketchTemplates.WIFI_STATION -> R.string.template_wifi_station
+        else -> R.string.template_bare
+    }
+
+    private fun createSketch(name: String, templateId: String) {
         try {
-            repository.createSketch(name)
+            repository.createSketch(name, SketchTemplates.contentFor(templateId, AppSettings(this).board))
             refreshSketchList()
         } catch (e: SketchNameInvalidException) {
             toast(getString(R.string.error_invalid_sketch_name))

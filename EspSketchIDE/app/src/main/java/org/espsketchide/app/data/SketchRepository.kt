@@ -6,7 +6,9 @@ import android.net.Uri
 import androidx.documentfile.provider.DocumentFile
 import org.espsketchide.app.model.Sketch
 import org.espsketchide.app.model.SketchFile
+import org.espsketchide.app.settings.Board
 import org.espsketchide.app.settings.PREFS_NAME
+import org.espsketchide.app.templates.SketchTemplates
 import java.io.BufferedReader
 import java.io.InputStreamReader
 import java.io.OutputStreamWriter
@@ -62,16 +64,41 @@ class SketchRepository(private val context: Context) {
             .map { Sketch(it.name!!, it.uri) }
     }
 
+    /** [base] if no entry in the sketchbook has that name, otherwise `base_2`, `base_3`, … */
+    fun uniqueName(base: String): String {
+        val root = rootDocument() ?: return base
+        val taken = root.listFiles().mapNotNull { it.name }.toSet()
+        return SketchNames.nextFreeName(base, taken)
+    }
+
+    /** Creates a sketch whose only file is `<name>.ino` holding [primaryContent]. */
     @Throws(SketchNameInvalidException::class, SketchAlreadyExistsException::class)
-    fun createSketch(name: String): Sketch {
+    fun createSketch(name: String, primaryContent: String = SketchTemplates.contentFor(SketchTemplates.BARE, Board.DEFAULT)): Sketch =
+        createSketch(name, mapOf("$name.ino" to primaryContent))
+
+    /**
+     * Creates a sketch from [files] (file name to content), e.g. an example. The sketch must contain
+     * its primary `<name>.ino`. If writing any file fails the half-made folder is removed again.
+     */
+    @Throws(SketchNameInvalidException::class, SketchAlreadyExistsException::class)
+    fun createSketch(name: String, files: Map<String, String>): Sketch {
         if (!isValidSketchName(name)) throw SketchNameInvalidException()
+        require("$name.ino" in files) { "A sketch needs its primary $name.ino" }
         val root = rootDocument() ?: throw IllegalStateException("No sketches root set")
         if (root.findFile(name) != null) throw SketchAlreadyExistsException()
 
         val folder = root.createDirectory(name) ?: throw IllegalStateException("Could not create sketch folder")
-        val inoFile = folder.createFile("text/x-arduino", "$name.ino")
-            ?: throw IllegalStateException("Could not create $name.ino")
-        writeFile(inoFile.uri, defaultSketchTemplate())
+        try {
+            for ((fileName, content) in files) {
+                // application/octet-stream keeps the display name as-is (see addFile).
+                val file = folder.createFile("application/octet-stream", fileName)
+                    ?: throw IllegalStateException("Could not create $fileName")
+                writeFile(file.uri, content)
+            }
+        } catch (e: Exception) {
+            folder.delete()
+            throw e
+        }
         return Sketch(name, folder.uri)
     }
 
@@ -146,15 +173,4 @@ class SketchRepository(private val context: Context) {
     }
 
     private fun extensionOf(fileName: String): String = fileName.substringAfterLast('.', "")
-
-    private fun defaultSketchTemplate(): String = """
-        void setup() {
-          Serial.begin(115200);
-
-        }
-
-        void loop() {
-
-        }
-    """.trimIndent() + "\n"
 }
