@@ -1,6 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Order is overflow priority: with little room, later ifRoom items fall into the ⋮ menu first. -->
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item
+        android:id="@+id/action_undo"
+        android:icon="@drawable/ic_undo"
+        android:title="@string/action_undo"
+        app:showAsAction="ifRoom" />
+    <item
+        android:id="@+id/action_redo"
+        android:icon="@drawable/ic_redo"
+        android:title="@string/action_redo"
+        app:showAsAction="ifRoom" />
+    <item
+        android:id="@+id/action_search"
+        android:icon="@drawable/ic_search"
+        android:title="@string/action_search"
+        app:showAsAction="ifRoom" />
     <item
         android:id="@+id/action_save"
         android:icon="@drawable/ic_save"
@@ -8,9 +24,8 @@
         app:showAsAction="ifRoom" />
     <item
         android:id="@+id/action_add_file"
-        android:icon="@drawable/ic_add"
         android:title="@string/action_add_file"
-        app:showAsAction="ifRoom" />
+        app:showAsAction="never" />
     <item
         android:id="@+id/action_settings"
         android:title="@string/action_settings"

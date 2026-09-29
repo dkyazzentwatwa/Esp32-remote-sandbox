@@ -39,10 +39,32 @@
 
     </com.google.android.material.appbar.AppBarLayout>
 
+    <include
+        android:id="@+id/searchPanel"
+        layout="@layout/view_search_panel" />
+
     <io.github.rosemoe.sora.widget.CodeEditor
         android:id="@+id/codeEditor"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@color/esp_divider" />
+
+    <HorizontalScrollView
+        android:id="@+id/symbolBarScroll"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/esp_bar"
+        android:scrollbars="none">
+
+        <io.github.rosemoe.sora.widget.SymbolInputView
+            android:id="@+id/symbolBar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+    </HorizontalScrollView>
 
 </LinearLayout>

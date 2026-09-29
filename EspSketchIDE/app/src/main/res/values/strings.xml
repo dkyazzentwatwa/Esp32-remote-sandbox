@@ -59,6 +59,7 @@
     <string name="search_hint">Find</string>
     <string name="replace_hint">Replace with</string>
     <string name="search_no_results">0 results</string>
+    <string name="search_match_case_label" translatable="false">Aa</string>
     <string name="search_match_case">Match case</string>
     <string name="search_previous">Previous match</string>
     <string name="search_next">Next match</string>

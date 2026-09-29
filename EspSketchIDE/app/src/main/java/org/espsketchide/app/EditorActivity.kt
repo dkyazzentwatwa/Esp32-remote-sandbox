@@ -5,15 +5,20 @@ import android.content.res.Configuration
 import android.graphics.Typeface
 import android.net.Uri
 import android.os.Bundle
+import android.util.TypedValue
 import android.view.Menu
 import android.view.MenuItem
+import android.view.View
 import android.widget.EditText
 import android.widget.Toast
+import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import androidx.core.content.IntentCompat
 import androidx.core.content.res.ResourcesCompat
 import com.google.android.material.tabs.TabLayout
+import io.github.rosemoe.sora.event.ContentChangeEvent
 import io.github.rosemoe.sora.lang.EmptyLanguage
 import io.github.rosemoe.sora.widget.schemes.SchemeDarcula
 import io.github.rosemoe.sora.widget.schemes.SchemeGitHub
@@ -21,7 +26,10 @@ import org.espsketchide.app.data.SketchAlreadyExistsException
 import org.espsketchide.app.data.SketchNameInvalidException
 import org.espsketchide.app.data.SketchRepository
 import org.espsketchide.app.databinding.ActivityEditorBinding
+import org.espsketchide.app.editor.DirtyTracker
 import org.espsketchide.app.editor.EditorLanguages
+import org.espsketchide.app.editor.SearchController
+import org.espsketchide.app.editor.SymbolBarSymbols
 import org.espsketchide.app.model.Sketch
 import org.espsketchide.app.model.SketchFile
 import org.espsketchide.app.settings.AppSettings
@@ -37,6 +45,20 @@ class EditorActivity : AppCompatActivity() {
     private var openFiles: List<SketchFile> = emptyList()
     private var currentFile: SketchFile? = null
     private var highlightingAvailable = false
+
+    private lateinit var searchController: SearchController
+    private var undoItem: MenuItem? = null
+    private var redoItem: MenuItem? = null
+
+    /** Files whose editor text is newer than what is on disk. Shown as "name •" in the tab. */
+    private val dirtyFiles = DirtyTracker<Uri>()
+
+    /** True while [loadFile] replaces the editor text, so that is not counted as an edit. */
+    private var loading = false
+
+    private val closeSearchOnBack = object : OnBackPressedCallback(false) {
+        override fun handleOnBackPressed() = searchController.hide()
+    }
 
     private val fileTabListener = object : TabLayout.OnTabSelectedListener {
         override fun onTabSelected(tab: TabLayout.Tab) {
@@ -67,7 +89,12 @@ class EditorActivity : AppCompatActivity() {
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         supportActionBar?.title = sketch.name
 
+        onBackPressedDispatcher.addCallback(this, closeSearchOnBack)
         setupEditor()
+        setupSymbolBar()
+        searchController = SearchController(binding.searchPanel, binding.codeEditor) { visible ->
+            closeSearchOnBack.isEnabled = visible
+        }
         setupFileTabs()
 
         if (savedInstanceState == null) {
@@ -85,7 +112,34 @@ class EditorActivity : AppCompatActivity() {
         binding.codeEditor.setTypefaceText(mono)
         binding.codeEditor.setTypefaceLineNumber(mono)
         binding.codeEditor.setTabWidth(2)
+        binding.codeEditor.subscribeEvent(ContentChangeEvent::class.java) { event, _ ->
+            val file = currentFile
+            val isEdit = !loading && event.action != ContentChangeEvent.ACTION_SET_NEW_TEXT
+            if (file != null && isEdit && dirtyFiles.markDirty(file.uri)) {
+                refreshTabLabel(file)
+            }
+            updateUndoRedo()
+        }
         EditorLanguages.whenReady(this) { ok -> onHighlightingReady(ok, isDarkMode) }
+    }
+
+    private fun setupSymbolBar() {
+        val bar = binding.symbolBar
+        bar.bindEditor(binding.codeEditor)
+        bar.addSymbols(SymbolBarSymbols.display, SymbolBarSymbols.insert)
+        val mono = ResourcesCompat.getFont(this, R.font.jetbrains_mono_regular) ?: Typeface.MONOSPACE
+        val color = ContextCompat.getColor(this, R.color.esp_on_bar)
+        val ripple = TypedValue().also { theme.resolveAttribute(android.R.attr.selectableItemBackground, it, true) }
+        val minWidth = (SYMBOL_MIN_WIDTH_DP * resources.displayMetrics.density).toInt()
+        bar.setTextColor(color)
+        bar.forEachButton { button ->
+            button.typeface = mono
+            button.setTextColor(color)
+            button.isAllCaps = false
+            button.setBackgroundResource(ripple.resourceId)
+            button.minWidth = 0
+            button.minimumWidth = minWidth
+        }
     }
 
     /** Switches on TextMate highlighting; runs on the main thread, possibly after the first file loaded. */
@@ -100,6 +154,7 @@ class EditorActivity : AppCompatActivity() {
     private fun applyEditorSettings() {
         binding.codeEditor.setTextSize(settings.editorFontSize.toFloat())
         binding.codeEditor.setWordwrap(settings.wordWrap)
+        binding.symbolBarScroll.visibility = if (settings.showSymbolBar) View.VISIBLE else View.GONE
     }
 
     private fun setupFileTabs() {
@@ -109,7 +164,7 @@ class EditorActivity : AppCompatActivity() {
         binding.fileTabLayout.removeOnTabSelectedListener(fileTabListener)
         binding.fileTabLayout.removeAllTabs()
         openFiles.forEach { file ->
-            binding.fileTabLayout.addTab(binding.fileTabLayout.newTab().setText(file.name))
+            binding.fileTabLayout.addTab(binding.fileTabLayout.newTab().setText(tabLabel(file)))
         }
         binding.fileTabLayout.addOnTabSelectedListener(fileTabListener)
         if (openFiles.isNotEmpty()) {
@@ -119,15 +174,47 @@ class EditorActivity : AppCompatActivity() {
 
     private fun loadFile(file: SketchFile) {
         currentFile = file
-        binding.codeEditor.setEditorLanguage(
-            if (highlightingAvailable) EditorLanguages.languageFor(file.name, settings.board) else EmptyLanguage()
-        )
-        binding.codeEditor.setText(repository.readFile(file.uri))
+        loading = true
+        try {
+            binding.codeEditor.setEditorLanguage(
+                if (highlightingAvailable) EditorLanguages.languageFor(file.name, settings.board) else EmptyLanguage()
+            )
+            // A fresh Content also starts a fresh undo history.
+            binding.codeEditor.setText(repository.readFile(file.uri))
+        } finally {
+            loading = false
+        }
+        updateUndoRedo()
+        searchController.refresh()
     }
 
-    private fun saveCurrentFile() {
-        val file = currentFile ?: return
+    /** Writes the current file only if it has unsaved edits. Returns whether it wrote anything. */
+    private fun saveCurrentFile(): Boolean {
+        val file = currentFile ?: return false
+        if (!dirtyFiles.isDirty(file.uri)) return false
         repository.writeFile(file.uri, binding.codeEditor.text.toString())
+        dirtyFiles.markClean(file.uri)
+        refreshTabLabel(file)
+        return true
+    }
+
+    private fun tabLabel(file: SketchFile): String =
+        if (dirtyFiles.isDirty(file.uri)) getString(R.string.editor_unsaved_indicator, file.name) else file.name
+
+    private fun refreshTabLabel(file: SketchFile) {
+        val index = openFiles.indexOfFirst { it.uri == file.uri }
+        if (index >= 0) binding.fileTabLayout.getTabAt(index)?.text = tabLabel(file)
+    }
+
+    private fun updateUndoRedo() {
+        undoItem?.let { setEnabledDimmed(it, binding.codeEditor.canUndo()) }
+        redoItem?.let { setEnabledDimmed(it, binding.codeEditor.canRedo()) }
+    }
+
+    /** Toolbar icons are tinted by the theme, so a disabled one has to be dimmed by hand. */
+    private fun setEnabledDimmed(item: MenuItem, enabled: Boolean) {
+        item.isEnabled = enabled
+        item.icon?.mutate()?.alpha = if (enabled) ALPHA_ENABLED else ALPHA_DISABLED
     }
 
     override fun onResume() {
@@ -147,6 +234,9 @@ class EditorActivity : AppCompatActivity() {
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         menuInflater.inflate(R.menu.editor_toolbar, menu)
+        undoItem = menu.findItem(R.id.action_undo)
+        redoItem = menu.findItem(R.id.action_redo)
+        updateUndoRedo()
         return true
     }
 
@@ -156,9 +246,21 @@ class EditorActivity : AppCompatActivity() {
                 finish()
                 true
             }
+            R.id.action_undo -> {
+                binding.codeEditor.undo()
+                true
+            }
+            R.id.action_redo -> {
+                binding.codeEditor.redo()
+                true
+            }
+            R.id.action_search -> {
+                searchController.toggle()
+                true
+            }
             R.id.action_save -> {
-                saveCurrentFile()
-                Toast.makeText(this, R.string.saved_toast, Toast.LENGTH_SHORT).show()
+                val message = if (saveCurrentFile()) R.string.saved_toast else R.string.nothing_to_save
+                Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
                 true
             }
             R.id.action_add_file -> {
@@ -204,5 +306,8 @@ class EditorActivity : AppCompatActivity() {
     companion object {
         const val EXTRA_SKETCH_NAME = "extra_sketch_name"
         const val EXTRA_SKETCH_FOLDER_URI = "extra_sketch_folder_uri"
+        private const val ALPHA_ENABLED = 255
+        private const val ALPHA_DISABLED = 90
+        private const val SYMBOL_MIN_WIDTH_DP = 40
     }
 }
