@@ -30,5 +30,5 @@
 
     <string name="board_esp32">ESP32</string>
     <string name="board_esp8266">ESP8266</string>
-    <string name="roadmap_notice">Compiling and uploading sketches on-device is on the roadmap and not yet implemented — see the README for status.</string>
+    <string name="roadmap_notice">Compile and upload aren\'t available yet. See the README roadmap.</string>
 </resources>
