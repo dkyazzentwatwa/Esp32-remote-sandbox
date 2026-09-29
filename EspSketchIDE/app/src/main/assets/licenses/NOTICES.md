@@ -21,6 +21,10 @@ bundles or links the following third-party material.
 - Source: https://github.com/google/material-design-icons (commit 6d7ca43)
 - License: Apache License 2.0 (see `material-design-icons-LICENSE.txt`)
 
+## Example sketches and templates
+- Files: `assets/examples/**`, `templates/SketchTemplates.kt`
+- Written for this project and released under its MIT license.
+
 ## Libraries
 - sora-editor (`editor`, `language-textmate`), https://github.com/Rosemoe/sora-editor:
   GNU LGPL 2.1, used unmodified as a library.

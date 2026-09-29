@@ -23,6 +23,13 @@ This is the first milestone of an incremental build-out. What works today:
   does not build for a board; compiling is not implemented.
 - ✅ Dark-by-default IDE theme (Light / Dark / Follow system) and a Settings
   screen for theme, board, editor font size, word wrap, and the symbol bar.
+- ✅ Built-in examples: Blink, Button, Fade, AnalogRead, Serial echo, Wi-Fi scan
+  / connect / HTTP GET / web server / NTP clock, deep sleep, touch sensor and a
+  saved counter, with separate ESP32 and ESP8266 versions where the cores
+  differ. Open one from the sketch list (⋮ → Examples) as a new sketch. New
+  sketches can start from a template (Bare minimum, Serial, WiFi station).
+  The examples have not been compiled by the project yet, because compiling is
+  not implemented.
 - 🚧 **Compiling and uploading sketches is not implemented yet.** See
   Roadmap below — this is deliberately not stubbed in as a fake button,
   so the app only claims to do what it actually does.
