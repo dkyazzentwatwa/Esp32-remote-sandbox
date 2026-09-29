@@ -1,0 +1,143 @@
+{
+  "examples": [
+    {
+      "id": "blink",
+      "name": "Blink",
+      "category": "Basics",
+      "description": "Blink the on-board LED once per second.",
+      "variants": {
+        "esp32": "basics/Blink",
+        "esp8266": "basics/Blink"
+      }
+    },
+    {
+      "id": "blink_without_delay",
+      "name": "BlinkWithoutDelay",
+      "category": "Basics",
+      "description": "Blink the LED with millis() so the loop never blocks.",
+      "variants": {
+        "esp32": "basics/BlinkWithoutDelay",
+        "esp8266": "basics/BlinkWithoutDelay"
+      }
+    },
+    {
+      "id": "button",
+      "name": "Button",
+      "category": "Basics",
+      "description": "Read a button with the internal pull-up resistor.",
+      "variants": {
+        "esp32": "basics/Button",
+        "esp8266": "basics/Button"
+      }
+    },
+    {
+      "id": "analog_read",
+      "name": "AnalogRead",
+      "category": "Basics",
+      "description": "Read a voltage on an analog pin and print it.",
+      "variants": {
+        "esp32": "basics/AnalogRead_esp32",
+        "esp8266": "basics/AnalogRead_esp8266"
+      }
+    },
+    {
+      "id": "fade",
+      "name": "Fade",
+      "category": "Basics",
+      "description": "Fade the LED in and out with PWM (analogWrite).",
+      "variants": {
+        "esp32": "basics/Fade",
+        "esp8266": "basics/Fade"
+      }
+    },
+    {
+      "id": "serial_echo",
+      "name": "SerialEcho",
+      "category": "Communication",
+      "description": "Echo everything received on the serial port.",
+      "variants": {
+        "esp32": "comm/SerialEcho",
+        "esp8266": "comm/SerialEcho"
+      }
+    },
+    {
+      "id": "wifi_scan",
+      "name": "WiFiScan",
+      "category": "WiFi",
+      "description": "List the Wi-Fi networks in range.",
+      "variants": {
+        "esp32": "wifi/WiFiScan_esp32",
+        "esp8266": "wifi/WiFiScan_esp8266"
+      }
+    },
+    {
+      "id": "wifi_connect",
+      "name": "WiFiConnect",
+      "category": "WiFi",
+      "description": "Join a Wi-Fi network and print the IP address.",
+      "variants": {
+        "esp32": "wifi/WiFiConnect_esp32",
+        "esp8266": "wifi/WiFiConnect_esp8266"
+      }
+    },
+    {
+      "id": "http_get",
+      "name": "HttpGet",
+      "category": "WiFi",
+      "description": "Fetch a web page over HTTP.",
+      "variants": {
+        "esp32": "wifi/HttpGet_esp32",
+        "esp8266": "wifi/HttpGet_esp8266"
+      }
+    },
+    {
+      "id": "web_server_hello",
+      "name": "WebServerHello",
+      "category": "WiFi",
+      "description": "A tiny web server that answers Hello.",
+      "variants": {
+        "esp32": "wifi/WebServerHello_esp32",
+        "esp8266": "wifi/WebServerHello_esp8266"
+      }
+    },
+    {
+      "id": "ntp_clock",
+      "name": "NtpClock",
+      "category": "WiFi",
+      "description": "Sync the clock over NTP and print the time.",
+      "variants": {
+        "esp32": "wifi/NtpClock_esp32",
+        "esp8266": "wifi/NtpClock_esp8266"
+      }
+    },
+    {
+      "id": "deep_sleep_timer",
+      "name": "DeepSleepTimer",
+      "category": "ESP-specific",
+      "description": "Sleep for ten seconds, wake up, repeat.",
+      "variants": {
+        "esp32": "esp/DeepSleepTimer_esp32",
+        "esp8266": "esp/DeepSleepTimer_esp8266"
+      }
+    },
+    {
+      "id": "touch_sensor",
+      "name": "TouchSensor",
+      "category": "ESP-specific",
+      "description": "Read a capacitive touch pin (classic ESP32 only).",
+      "variants": {
+        "esp32": "esp/TouchSensor"
+      }
+    },
+    {
+      "id": "saved_counter",
+      "name": "SavedCounter",
+      "category": "ESP-specific",
+      "description": "Count restarts and keep the count in flash.",
+      "variants": {
+        "esp32": "esp/SavedCounter_esp32",
+        "esp8266": "esp/SavedCounter_esp8266"
+      }
+    }
+  ]
+}
