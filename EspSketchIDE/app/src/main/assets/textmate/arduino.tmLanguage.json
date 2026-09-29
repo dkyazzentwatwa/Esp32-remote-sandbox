@@ -1,0 +1,30 @@
+{
+  "name": "Arduino",
+  "scopeName": "source.arduino",
+  "fileTypes": ["ino"],
+  "comment": "Arduino/ESP names injected into VS Code's C++ grammar. An injection (not top-level patterns) because the C++ grammar re-enters itself via $self inside blocks, so top-level patterns would never apply inside function bodies. 'L:' wins ties against C++'s own rules; '-string -comment' keeps these out of literals. The function pattern consumes leading whitespace because C++'s function-call rule starts its match at that whitespace, which would otherwise beat a match starting at the name.",
+  "patterns": [{ "include": "source.cpp" }],
+  "injections": {
+    "L:source.arduino -string -comment": {
+      "patterns": [
+        { "include": "#functions" },
+        { "include": "#constants" },
+        { "include": "#classes" }
+      ]
+    }
+  },
+  "repository": {
+    "functions": {
+      "match": "(\\s*)\\b(pinMode|digitalWrite|digitalRead|analogRead|analogWrite|analogReadResolution|analogWriteResolution|analogWriteRange|delay|delayMicroseconds|millis|micros|tone|noTone|pulseIn|shiftIn|shiftOut|attachInterrupt|detachInterrupt|digitalPinToInterrupt|interrupts|noInterrupts|map|constrain|random|randomSeed|yield|ledcAttach|ledcAttachChannel|ledcWrite|ledcWriteTone|ledcDetach|touchRead|hallRead|temperatureRead|configTime|getLocalTime|esp_deep_sleep_start|esp_sleep_enable_timer_wakeup|esp_sleep_enable_touchpad_wakeup)\\b",
+      "captures": { "2": { "name": "support.function.arduino" } }
+    },
+    "constants": {
+      "match": "\\b(?:HIGH|LOW|INPUT|OUTPUT|INPUT_PULLUP|INPUT_PULLDOWN|LED_BUILTIN|CHANGE|RISING|FALLING|LSBFIRST|MSBFIRST|A0|WL_CONNECTED|WL_DISCONNECTED|WL_IDLE_STATUS|WL_NO_SSID_AVAIL|WL_CONNECT_FAILED|WIFI_STA|WIFI_AP|WIFI_AP_STA|WIFI_OFF|HTTP_CODE_OK|HTTP_GET|HTTP_POST|WAKEUP_PULLUP|RF_DEFAULT|SERIAL_8N1)\\b",
+      "name": "support.constant.arduino"
+    },
+    "classes": {
+      "match": "\\b(?:Serial|Serial1|Serial2|WiFi|WiFiClient|WiFiClientSecure|WiFiServer|WiFiUDP|WebServer|ESP8266WebServer|HTTPClient|String|Preferences|EEPROM|ESP|Wire|SPI|Ticker)\\b",
+      "name": "support.class.arduino"
+    }
+  }
+}

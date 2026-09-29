@@ -2,6 +2,7 @@ package org.espsketchide.app
 
 import android.app.Application
 import androidx.appcompat.app.AppCompatDelegate
+import org.espsketchide.app.editor.EditorLanguages
 import org.espsketchide.app.settings.AppSettings
 
 class EspSketchApp : Application() {
@@ -9,5 +10,6 @@ class EspSketchApp : Application() {
     override fun onCreate() {
         super.onCreate()
         AppCompatDelegate.setDefaultNightMode(AppSettings(this).themeMode.nightMode)
+        EditorLanguages.init(this)
     }
 }

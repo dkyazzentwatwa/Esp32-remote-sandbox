@@ -2,6 +2,7 @@ package org.espsketchide.app
 
 import android.content.Intent
 import android.content.res.Configuration
+import android.graphics.Typeface
 import android.net.Uri
 import android.os.Bundle
 import android.view.Menu
@@ -11,26 +12,31 @@ import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.IntentCompat
+import androidx.core.content.res.ResourcesCompat
 import com.google.android.material.tabs.TabLayout
-import io.github.rosemoe.sora.langs.java.JavaLanguage
+import io.github.rosemoe.sora.lang.EmptyLanguage
 import io.github.rosemoe.sora.widget.schemes.SchemeDarcula
 import io.github.rosemoe.sora.widget.schemes.SchemeGitHub
 import org.espsketchide.app.data.SketchAlreadyExistsException
 import org.espsketchide.app.data.SketchNameInvalidException
 import org.espsketchide.app.data.SketchRepository
 import org.espsketchide.app.databinding.ActivityEditorBinding
+import org.espsketchide.app.editor.EditorLanguages
 import org.espsketchide.app.model.Sketch
 import org.espsketchide.app.model.SketchFile
+import org.espsketchide.app.settings.AppSettings
 import org.espsketchide.app.settings.SettingsActivity
 
 class EditorActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityEditorBinding
     private lateinit var repository: SketchRepository
+    private lateinit var settings: AppSettings
     private lateinit var sketch: Sketch
 
     private var openFiles: List<SketchFile> = emptyList()
     private var currentFile: SketchFile? = null
+    private var highlightingAvailable = false
 
     private val fileTabListener = object : TabLayout.OnTabSelectedListener {
         override fun onTabSelected(tab: TabLayout.Tab) {
@@ -55,6 +61,7 @@ class EditorActivity : AppCompatActivity() {
         }
         sketch = Sketch(sketchName, folderUri)
         repository = SketchRepository(this)
+        settings = AppSettings(this)
 
         setSupportActionBar(binding.toolbar)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
@@ -69,11 +76,30 @@ class EditorActivity : AppCompatActivity() {
     }
 
     private fun setupEditor() {
-        binding.codeEditor.setEditorLanguage(JavaLanguage())
         val isDarkMode = (resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK) ==
             Configuration.UI_MODE_NIGHT_YES
+        // Plain colors until highlighting is ready. Usually it already is, and whenReady
+        // replaces them before the first frame.
         binding.codeEditor.colorScheme = if (isDarkMode) SchemeDarcula() else SchemeGitHub()
-        binding.codeEditor.setTextSize(14f)
+        val mono = ResourcesCompat.getFont(this, R.font.jetbrains_mono_regular) ?: Typeface.MONOSPACE
+        binding.codeEditor.setTypefaceText(mono)
+        binding.codeEditor.setTypefaceLineNumber(mono)
+        binding.codeEditor.setTabWidth(2)
+        EditorLanguages.whenReady(this) { ok -> onHighlightingReady(ok, isDarkMode) }
+    }
+
+    /** Switches on TextMate highlighting; runs on the main thread, possibly after the first file loaded. */
+    private fun onHighlightingReady(ok: Boolean, isDarkMode: Boolean) {
+        if (!ok || isDestroyed) return
+        highlightingAvailable = true
+        binding.codeEditor.colorScheme = EditorLanguages.colorScheme(isDarkMode)
+        currentFile?.let { binding.codeEditor.setEditorLanguage(EditorLanguages.languageFor(it.name)) }
+    }
+
+    /** Font size and word wrap can change in Settings while this screen is in the back stack. */
+    private fun applyEditorSettings() {
+        binding.codeEditor.setTextSize(settings.editorFontSize.toFloat())
+        binding.codeEditor.setWordwrap(settings.wordWrap)
     }
 
     private fun setupFileTabs() {
@@ -93,8 +119,10 @@ class EditorActivity : AppCompatActivity() {
 
     private fun loadFile(file: SketchFile) {
         currentFile = file
-        val content = repository.readFile(file.uri)
-        binding.codeEditor.setText(content)
+        binding.codeEditor.setEditorLanguage(
+            if (highlightingAvailable) EditorLanguages.languageFor(file.name) else EmptyLanguage()
+        )
+        binding.codeEditor.setText(repository.readFile(file.uri))
     }
 
     private fun saveCurrentFile() {
@@ -102,9 +130,19 @@ class EditorActivity : AppCompatActivity() {
         repository.writeFile(file.uri, binding.codeEditor.text.toString())
     }
 
+    override fun onResume() {
+        super.onResume()
+        applyEditorSettings()
+    }
+
     override fun onPause() {
         super.onPause()
         saveCurrentFile()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        binding.codeEditor.release()
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {

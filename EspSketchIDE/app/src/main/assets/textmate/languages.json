@@ -1,0 +1,21 @@
+{
+  "languages": [
+    {
+      "grammar": "textmate/cpp/cpp.embedded.macro.tmLanguage.json",
+      "name": "cpp-macro",
+      "scopeName": "source.cpp.embedded.macro"
+    },
+    {
+      "grammar": "textmate/cpp/cpp.tmLanguage.json",
+      "name": "cpp",
+      "scopeName": "source.cpp",
+      "languageConfiguration": "textmate/cpp/language-configuration.json"
+    },
+    {
+      "grammar": "textmate/arduino.tmLanguage.json",
+      "name": "arduino",
+      "scopeName": "source.arduino",
+      "languageConfiguration": "textmate/cpp/language-configuration.json"
+    }
+  ]
+}
