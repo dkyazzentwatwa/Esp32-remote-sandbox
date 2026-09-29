@@ -7,25 +7,35 @@
 
     <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:background="@color/esp_bar"
+        android:theme="@style/ThemeOverlay.EspSketchIDE.Bar"
+        app:elevation="0dp"
+        app:liftOnScroll="false">
 
-        <androidx.appcompat.widget.Toolbar
+        <com.google.android.material.appbar.MaterialToolbar
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
-            android:layout_height="?attr/actionBarSize"
-            android:background="@color/esp_primary"
-            android:theme="@style/ThemeOverlay.Material3.Dark.ActionBar" />
+            android:layout_height="?attr/actionBarSize" />
 
         <com.google.android.material.tabs.TabLayout
             android:id="@+id/fileTabLayout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="@color/esp_primary_dark"
+            android:background="@color/esp_bar"
             app:tabGravity="start"
             app:tabIndicatorColor="@color/esp_accent"
+            app:tabIndicatorFullWidth="true"
+            app:tabMinWidth="72dp"
             app:tabMode="scrollable"
-            app:tabSelectedTextColor="@color/esp_on_primary"
-            app:tabTextColor="@color/esp_on_primary_muted" />
+            app:tabSelectedTextColor="@color/esp_on_bar"
+            app:tabTextAppearance="@style/TextAppearance.EspSketchIDE.Tab"
+            app:tabTextColor="@color/esp_on_bar_muted" />
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="@color/esp_divider" />
 
     </com.google.android.material.appbar.AppBarLayout>
 

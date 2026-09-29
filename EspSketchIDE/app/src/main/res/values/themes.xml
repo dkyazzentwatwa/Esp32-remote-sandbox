@@ -1,11 +1,36 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
     <style name="Theme.EspSketchIDE" parent="Theme.Material3.DayNight.NoActionBar">
         <item name="colorPrimary">@color/esp_primary</item>
-        <item name="colorPrimaryDark">@color/esp_primary_dark</item>
-        <item name="colorOnPrimary">@color/esp_on_primary</item>
+        <item name="colorOnPrimary">@color/esp_on_accent</item>
         <item name="colorSecondary">@color/esp_accent</item>
-        <item name="colorSurface">@color/esp_surface_light</item>
-        <item name="android:colorBackground">@color/esp_background_light</item>
-        <item name="android:statusBarColor" tools:targetApi="21">@color/esp_primary_dark</item>
+        <item name="colorOnSecondary">@color/esp_on_accent</item>
+        <item name="android:colorBackground">@color/esp_background</item>
+        <item name="colorSurface">@color/esp_surface</item>
+        <item name="colorSurfaceContainer">@color/esp_surface</item>
+        <item name="colorSurfaceContainerHigh">@color/esp_surface</item>
+        <item name="colorSurfaceContainerHighest">@color/esp_surface</item>
+        <item name="colorOnSurface">@color/esp_on_surface</item>
+        <item name="colorOnSurfaceVariant">@color/esp_on_surface_muted</item>
+        <item name="colorOutlineVariant">@color/esp_divider</item>
+        <item name="android:statusBarColor">@color/esp_bar</item>
+        <item name="android:windowLightStatusBar">@bool/esp_light_bars</item>
+        <item name="android:navigationBarColor">@color/esp_background</item>
+        <item name="android:windowLightNavigationBar" tools:targetApi="27">@bool/esp_light_bars</item>
+    </style>
+
+    <!-- Put on every AppBarLayout so titles, icons and overflow use the bar colors. -->
+    <style name="ThemeOverlay.EspSketchIDE.Bar" parent="">
+        <item name="colorControlNormal">@color/esp_on_bar</item>
+        <item name="colorOnSurface">@color/esp_on_bar</item>
+        <item name="colorOnSurfaceVariant">@color/esp_on_bar_muted</item>
+        <item name="android:textColorPrimary">@color/esp_on_bar</item>
+        <item name="android:textColorSecondary">@color/esp_on_bar_muted</item>
+    </style>
+
+    <style name="TextAppearance.EspSketchIDE.Tab" parent="TextAppearance.Material3.TitleSmall">
+        <item name="fontFamily">@font/jetbrains_mono_regular</item>
+        <item name="android:fontFamily">@font/jetbrains_mono_regular</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="android:textSize">13sp</item>
     </style>
 </resources>

@@ -3,14 +3,12 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <item
         android:id="@+id/action_save"
-        android:icon="@android:drawable/ic_menu_save"
+        android:icon="@drawable/ic_save"
         android:title="@string/action_save"
-        app:iconTint="@color/esp_on_primary"
-        app:showAsAction="always" />
+        app:showAsAction="ifRoom" />
     <item
         android:id="@+id/action_add_file"
-        android:icon="@android:drawable/ic_input_add"
+        android:icon="@drawable/ic_add"
         android:title="@string/action_add_file"
-        app:iconTint="@color/esp_on_primary"
-        app:showAsAction="always" />
+        app:showAsAction="ifRoom" />
 </menu>

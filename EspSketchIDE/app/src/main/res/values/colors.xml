@@ -1,11 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Brand -->
     <color name="esp_primary">#00838F</color>
-    <color name="esp_primary_dark">#005662</color>
     <color name="esp_accent">#FF6F00</color>
-    <color name="esp_background_light">#FAFAFA</color>
-    <color name="esp_background_dark">#121212</color>
-    <color name="esp_surface_light">#FFFFFF</color>
-    <color name="esp_surface_dark">#1E1E1E</color>
-    <color name="esp_on_primary">#FFFFFF</color>
-    <color name="esp_on_primary_muted">#B3FFFFFF</color>
+    <color name="esp_on_accent">#FFFFFF</color>
+
+    <!-- Surfaces; night values live in values-night/colors.xml -->
+    <color name="esp_background">#FFFFFF</color>
+    <color name="esp_surface">#F7F8FA</color>
+    <color name="esp_bar">#F2F3F5</color>
+    <color name="esp_on_bar">#1F2328</color>
+    <color name="esp_on_bar_muted">#6C707E</color>
+    <color name="esp_on_surface">#1F2328</color>
+    <color name="esp_on_surface_muted">#6C707E</color>
+    <color name="esp_divider">#DFE1E5</color>
 </resources>

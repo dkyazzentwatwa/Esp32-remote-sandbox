@@ -13,6 +13,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.google.android.material.divider.MaterialDividerItemDecoration
 import org.espsketchide.app.data.SketchAlreadyExistsException
 import org.espsketchide.app.data.SketchNameInvalidException
 import org.espsketchide.app.data.SketchRepository
@@ -48,6 +49,12 @@ class SketchListActivity : AppCompatActivity() {
         )
         binding.sketchRecyclerView.layoutManager = LinearLayoutManager(this)
         binding.sketchRecyclerView.adapter = adapter
+        binding.sketchRecyclerView.addItemDecoration(
+            MaterialDividerItemDecoration(this, MaterialDividerItemDecoration.VERTICAL).apply {
+                dividerInsetStart = resources.getDimensionPixelSize(R.dimen.sketch_row_divider_inset)
+                isLastItemDecorated = false
+            }
+        )
 
         binding.newSketchFab.setOnClickListener { promptNewSketch() }
 

@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 16dp row padding + 24dp icon + 16dp gap: the divider starts under the name -->
+    <dimen name="sketch_row_divider_inset">56dp</dimen>
+</resources>
