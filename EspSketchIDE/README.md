@@ -14,9 +14,15 @@ This is the first milestone of an incremental build-out. What works today:
   the Storage Access Framework, following the Arduino convention that a
   sketch folder's name matches its primary `.ino` file).
 - ✅ Multi-file editor with tabs per sketch, Arduino/C++ syntax highlighting,
-  JetBrains Mono, and save-on-switch/save-on-exit.
+  JetBrains Mono, and save-on-switch/save-on-exit. Tabs show `name •` while a
+  file has unsaved changes.
+- ✅ Editor ergonomics: undo/redo, find and replace (with match case), a
+  symbol bar above the keyboard for `{ } ( ) ; #` and friends, and
+  autocomplete for the Arduino/ESP API plus identifiers from your file.
+- ✅ A board setting (ESP32 or ESP8266) that picks the autocomplete lists. It
+  does not build for a board; compiling is not implemented.
 - ✅ Dark-by-default IDE theme (Light / Dark / Follow system) and a Settings
-  screen for theme, editor font size, and word wrap.
+  screen for theme, board, editor font size, word wrap, and the symbol bar.
 - 🚧 **Compiling and uploading sketches is not implemented yet.** See
   Roadmap below — this is deliberately not stubbed in as a fake button,
   so the app only claims to do what it actually does.
