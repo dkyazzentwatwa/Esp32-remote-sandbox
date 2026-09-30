@@ -57,7 +57,8 @@ class SearchController(
         }
         panel.searchClose.setOnClickListener { hide() }
         editor.subscribeEvent(PublishSearchResultEvent::class.java) { _, _ ->
-            if (jumpToFirstResult && editor.searcher.matchedPositionCount > 0) {
+            // stopSearch() also publishes, and the match counts throw once no query is set.
+            if (jumpToFirstResult && editor.searcher.hasQuery() && editor.searcher.matchedPositionCount > 0) {
                 jumpToFirstResult = false
                 keepPanelFocus { editor.searcher.gotoNext() }
             }
@@ -84,8 +85,8 @@ class SearchController(
 
     /** Hides the panel and stops the search, which clears the highlights. */
     fun hide() {
-        editor.searcher.stopSearch()
         jumpToFirstResult = false
+        editor.searcher.stopSearch()
         inputMethods().hideSoftInputFromWindow(panel.root.windowToken, 0)
         panel.root.visibility = View.GONE
         editor.requestFocus()
@@ -102,8 +103,8 @@ class SearchController(
     private fun runSearch() {
         val query = panel.searchField.text.toString()
         if (query.isEmpty()) {
-            editor.searcher.stopSearch()
             jumpToFirstResult = false
+            editor.searcher.stopSearch()
             panel.searchCount.text = ""
             return
         }
