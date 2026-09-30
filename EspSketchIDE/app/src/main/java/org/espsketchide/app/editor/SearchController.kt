@@ -29,8 +29,7 @@ class SearchController(
         panel.searchField.doAfterTextChanged { runSearch() }
         panel.searchField.setOnEditorActionListener { _, actionId, _ ->
             if (actionId == EditorInfo.IME_ACTION_SEARCH) {
-                editor.searcher.gotoNext()
-                updateCounter()
+                step { editor.searcher.gotoNext() }
                 true
             } else {
                 false
@@ -44,7 +43,10 @@ class SearchController(
         }
         panel.replaceOne.setOnClickListener {
             if (editor.searcher.hasQuery()) {
-                editor.searcher.replaceThis(panel.replaceField.text.toString())
+                // Re-arm the first-result jump so the next match is selected when the refreshed
+                // results arrive; pressing Replace again then replaces it, as in desktop editors.
+                jumpToFirstResult = true
+                keepPanelFocus { editor.searcher.replaceThis(panel.replaceField.text.toString()) }
                 updateCounter()
             }
         }
@@ -57,7 +59,7 @@ class SearchController(
         editor.subscribeEvent(PublishSearchResultEvent::class.java) { _, _ ->
             if (jumpToFirstResult && editor.searcher.matchedPositionCount > 0) {
                 jumpToFirstResult = false
-                editor.searcher.gotoNext()
+                keepPanelFocus { editor.searcher.gotoNext() }
             }
             updateCounter()
         }
@@ -113,9 +115,20 @@ class SearchController(
 
     private fun step(move: () -> Boolean) {
         if (editor.searcher.hasQuery()) {
-            move()
+            keepPanelFocus { move() }
             updateCounter()
         }
+    }
+
+    /**
+     * Runs a searcher move and gives focus back to the panel field that had it. sora selects the
+     * match with CodeEditor.setSelectionRegion, which calls requestFocus(); with the keyboard
+     * still open, the next keystrokes would then replace the selected match in the sketch.
+     */
+    private fun keepPanelFocus(move: () -> Unit) {
+        val field = if (panel.replaceField.hasFocus()) panel.replaceField else panel.searchField
+        move()
+        field.requestFocus()
     }
 
     private fun updateCounter() {
