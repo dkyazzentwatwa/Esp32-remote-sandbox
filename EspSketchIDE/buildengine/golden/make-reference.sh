@@ -11,7 +11,20 @@ ARDUINO15="$("$CLI" config get directories.data)"
 HERE="$(cd "$(dirname "$0")/../.." && pwd)"
 SKETCH="$OUT/sketches/Blink"
 mkdir -p "$OUT/sketches" "$OUT/builds"
-rm -rf "$SKETCH" && cp -r "$HERE/app/src/main/assets/examples/01.Basics/Blink" "$SKETCH"
+# Stage every ESP32 example variant under its sketch name (folder = .ino name, as arduino-cli
+# requires); variant folders in assets are named like WiFiScan_esp32.
+python3 - "$HERE/app/src/main/assets/examples" "$OUT/sketches" <<'PY2'
+import json, pathlib, shutil, sys
+src, dst = pathlib.Path(sys.argv[1]), pathlib.Path(sys.argv[2])
+for example in json.loads((src / "index.json").read_text())["examples"]:
+    path = example["variants"].get("esp32")
+    if not path:
+        continue
+    ino = next((src / path).glob("*.ino"))
+    target = dst / ino.stem
+    shutil.rmtree(target, ignore_errors=True)
+    shutil.copytree(src / path, target)
+PY2
 
 {
   echo "ARDUINO15=$ARDUINO15"
@@ -25,10 +38,9 @@ rm -rf "$SKETCH" && cp -r "$HERE/app/src/main/assets/examples/01.Basics/Blink" "
   --build-path "$OUT/build" "$SKETCH" > "$OUT/show-properties-menus.txt"
 "$CLI" compile -v --clean --fqbn esp32:esp32:esp32 --build-path "$OUT/build" "$SKETCH" > "$OUT/compile-verbose.txt"
 
-# Every bundled example, each with its own build dir and verbose log.
-for dir in "$HERE"/app/src/main/assets/examples/*/*/; do
+# Every bundled ESP32 example, each with its own build dir and verbose log.
+for dir in "$OUT"/sketches/*/; do
   name="$(basename "$dir")"
-  rm -rf "$OUT/sketches/$name" && cp -r "$dir" "$OUT/sketches/$name"
   [ "$name" = Blink ] && continue
   "$CLI" compile -v --clean --fqbn esp32:esp32:esp32 --build-path "$OUT/builds/$name" "$OUT/sketches/$name" \
     > "$OUT/builds/$name.verbose.txt"

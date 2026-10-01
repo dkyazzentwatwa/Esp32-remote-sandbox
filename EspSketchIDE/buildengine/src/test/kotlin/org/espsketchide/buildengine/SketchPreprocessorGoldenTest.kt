@@ -35,7 +35,7 @@ class SketchPreprocessorGoldenTest {
 
     @Test fun blink() = check("Blink")
     @Test fun helloSerial() = check("HelloSerial")
-    @Test fun analogReadSerial() = check("AnalogReadSerial")
+    @Test fun analogRead() = check("AnalogRead")
     @Test fun button() = check("Button")
     @Test fun fade() = check("Fade")
     @Test fun wifiScan() = check("WiFiScan")

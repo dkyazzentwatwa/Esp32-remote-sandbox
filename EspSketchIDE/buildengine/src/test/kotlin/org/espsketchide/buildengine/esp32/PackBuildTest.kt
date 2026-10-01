@@ -56,7 +56,7 @@ class PackBuildTest {
             return out.readBytes()
         }
 
-        for (name in listOf("Blink", "HelloSerial", "AnalogReadSerial", "Button", "Fade", "WiFiScan", "WiFiAccessPointLed", "BLEScan")) {
+        for (name in listOf("Blink", "HelloSerial", "AnalogRead", "Button", "Fade", "WiFiScan", "WiFiAccessPointLed", "BLEScan")) {
             val request = BuildRequest(platform, pack.defaultBoard, sketchDir = File(ref, "sketches/$name"), buildDir = tmp.newFolder("build-$name"))
             val result = Builder(request, Esp32BuildProfile, runner).build()
             for (sec in listOf(".flash.text", ".iram0.text", ".dram0.data")) {

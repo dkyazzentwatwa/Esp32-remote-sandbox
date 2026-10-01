@@ -21,7 +21,7 @@ ANDROID_NDK_HOME=... ./gradlew -Pspike \
   :spike-execprobe:assembleDebug
 
 # 2. Make the Blink pack from a desktop reference build
-arduino-cli compile -v --clean --fqbn esp32:esp32:esp32 --build-path /tmp/ref app/src/main/assets/examples/01.Basics/Blink > blink-verbose.log
+arduino-cli compile -v --clean --fqbn esp32:esp32:esp32 --build-path /tmp/ref app/src/main/assets/examples/basics/Blink > blink-verbose.log
 python3 spike/make-probe-pack.py --log blink-verbose.log --build /tmp/ref --out probe-pack
 
 # 3. Install, push the pack, run

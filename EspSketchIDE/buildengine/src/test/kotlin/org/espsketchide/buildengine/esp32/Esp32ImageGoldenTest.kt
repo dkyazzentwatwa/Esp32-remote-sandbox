@@ -12,7 +12,7 @@ import java.io.File
  */
 class Esp32ImageGoldenTest {
 
-    private val examples = listOf("Blink", "HelloSerial", "AnalogReadSerial", "Button", "Fade", "WiFiScan", "WiFiAccessPointLed", "BLEScan")
+    private val examples = listOf("Blink", "HelloSerial", "AnalogRead", "Button", "Fade", "WiFiScan", "WiFiAccessPointLed", "BLEScan")
     private val appOptions = Esp32Image.Options(flashMode = "dio", flashFreq = "80m", flashSize = "4MB", elfSha256Offset = 0xB0)
 
     @Test
