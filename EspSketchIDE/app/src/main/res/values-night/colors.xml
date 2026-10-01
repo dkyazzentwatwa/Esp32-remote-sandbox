@@ -1,5 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <color name="esp_primary">#4DB6AC</color>
+    <color name="esp_background">#1E1F22</color>
+    <color name="esp_surface">#2B2D30</color>
+    <color name="esp_bar">#2B2D30</color>
+    <color name="esp_on_bar">#DFE1E5</color>
+    <color name="esp_on_bar_muted">#9DA0A8</color>
+    <color name="esp_on_surface">#DFE1E5</color>
+    <color name="esp_on_surface_muted">#9DA0A8</color>
+    <color name="esp_divider">#393B40</color>
+
+    <!-- Build output: errors and warnings in the editor's output panel -->
     <color name="esp_error">#EF9A9A</color>
     <color name="esp_warning">#FFCC80</color>
 </resources>

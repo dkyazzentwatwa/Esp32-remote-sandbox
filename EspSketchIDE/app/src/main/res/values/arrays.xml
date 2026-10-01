@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="theme_entries">
+        <item>@string/theme_dark</item>
+        <item>@string/theme_light</item>
+        <item>@string/theme_system</item>
+    </string-array>
+    <!-- Must match ThemeMode keys in settings/AppSettings.kt -->
+    <string-array name="theme_values" translatable="false">
+        <item>dark</item>
+        <item>light</item>
+        <item>system</item>
+    </string-array>
+    <string-array name="board_entries">
+        <item>@string/board_esp32</item>
+        <item>@string/board_esp8266</item>
+    </string-array>
+    <!-- Must match Board keys in settings/AppSettings.kt -->
+    <string-array name="board_values" translatable="false">
+        <item>esp32</item>
+        <item>esp8266</item>
+    </string-array>
+</resources>

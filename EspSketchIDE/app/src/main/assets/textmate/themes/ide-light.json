@@ -1,0 +1,34 @@
+{
+  "name": "ide-light",
+  "type": "light",
+  "colors": {
+    "editor.background": "#FFFFFF",
+    "editor.foreground": "#1F2328",
+    "editor.lineHighlightBackground": "#F2F3F5",
+    "editor.selectionBackground": "#ADD6FF",
+    "editorCursor.foreground": "#000000",
+    "editorLineNumber.foreground": "#A0A1A7",
+    "editorLineNumber.activeForeground": "#3B3B3B",
+    "editorIndentGuide.background": "#E3E4E8",
+    "editorIndentGuide.activeBackground": "#C5C7CC",
+    "editorWhitespace.foreground": "#D3D3D3",
+    "completionWindowBackground": "#F7F8FA",
+    "completionWindowBackgroundCurrent": "#DDE7FF"
+  },
+  "tokenColors": [
+    { "settings": { "foreground": "#1F2328", "background": "#FFFFFF" } },
+    { "scope": ["comment", "punctuation.definition.comment"], "settings": { "foreground": "#008000", "fontStyle": "italic" } },
+    { "scope": ["string", "punctuation.definition.string"], "settings": { "foreground": "#A31515" } },
+    { "scope": "constant.character.escape", "settings": { "foreground": "#EE0000" } },
+    { "scope": "constant.numeric", "settings": { "foreground": "#098658" } },
+    { "scope": ["keyword", "storage", "storage.type", "storage.modifier", "constant.language", "keyword.operator.new", "keyword.operator.delete", "keyword.operator.sizeof"], "settings": { "foreground": "#0000FF" } },
+    { "scope": ["keyword.control", "keyword.control.directive", "punctuation.definition.directive"], "settings": { "foreground": "#AF00DB" } },
+    { "scope": "keyword.operator", "settings": { "foreground": "#1F2328" } },
+    { "scope": ["entity.name.function", "support.function"], "settings": { "foreground": "#795E26" } },
+    { "scope": ["entity.name.type", "entity.name.class", "entity.name.namespace", "support.type", "support.class"], "settings": { "foreground": "#267F99" } },
+    { "scope": ["entity.name.function.preprocessor", "entity.name.macro"], "settings": { "foreground": "#0000FF" } },
+    { "scope": "variable.parameter", "settings": { "foreground": "#001080" } },
+    { "scope": ["support.function.arduino", "support.class.arduino"], "settings": { "foreground": "#C0560A", "fontStyle": "bold" } },
+    { "scope": "support.constant.arduino", "settings": { "foreground": "#0070C1" } }
+  ]
+}

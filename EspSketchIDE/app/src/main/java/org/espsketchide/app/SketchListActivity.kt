@@ -7,6 +7,8 @@ import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.widget.EditText
+import com.google.android.material.chip.Chip
+import com.google.android.material.divider.MaterialDividerItemDecoration
 import android.widget.PopupMenu
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.enableEdgeToEdge
@@ -26,7 +28,13 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.espsketchide.app.compile.PackInstallState
 import org.espsketchide.app.databinding.ActivitySketchListBinding
-import org.espsketchide.app.examples.AssetExampleSource
+import org.espsketchide.app.databinding.DialogNewSketchBinding
+import org.espsketchide.app.examples.ExampleFiles
+import org.espsketchide.app.examples.ExamplesActivity
+import org.espsketchide.app.examples.load
+import org.espsketchide.app.settings.AppSettings
+import org.espsketchide.app.settings.SettingsActivity
+import org.espsketchide.app.templates.SketchTemplates
 import org.espsketchide.app.model.Sketch
 import org.espsketchide.app.sketches.SketchListUiState
 import org.espsketchide.app.sketches.SketchListViewModel
@@ -43,7 +51,7 @@ class SketchListActivity : AppCompatActivity() {
     private val viewModel: SketchListViewModel by viewModels {
         viewModelFactory {
             initializer {
-                SketchListViewModel((application as EspSketchApp).repository, AssetExampleSource(assets))
+                SketchListViewModel((application as EspSketchApp).repository)
             }
         }
     }
@@ -67,6 +75,16 @@ class SketchListActivity : AppCompatActivity() {
         }
     }
 
+    /** Examples returns the chosen example's id; it is copied into a new sketch and opened. */
+    private val pickExample = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+        val id = result.data?.getStringExtra(ExamplesActivity.RESULT_EXAMPLE_ID) ?: return@registerForActivityResult
+        lifecycleScope.launch {
+            val board = AppSettings(this@SketchListActivity).board
+            val example = withContext(Dispatchers.IO) { ExampleFiles.load(assets, id, board) } ?: return@launch
+            viewModel.createFrom(example.name, example.files)
+        }
+    }
+
     private var packDialog: AlertDialog? = null
     private var packProgress: LinearProgressIndicator? = null
 
@@ -86,6 +104,13 @@ class SketchListActivity : AppCompatActivity() {
         )
         binding.sketchRecyclerView.layoutManager = LinearLayoutManager(this)
         binding.sketchRecyclerView.adapter = adapter
+        binding.sketchRecyclerView.addItemDecoration(
+            MaterialDividerItemDecoration(this, MaterialDividerItemDecoration.VERTICAL).apply {
+                dividerInsetStart = resources.getDimensionPixelSize(R.dimen.sketch_row_divider_inset)
+                isLastItemDecorated = false
+            }
+        )
+        binding.browseExamplesButton.setOnClickListener { openExamples() }
 
         binding.newSketchFab.setOnClickListener { promptNewSketch() }
 
@@ -132,8 +157,12 @@ class SketchListActivity : AppCompatActivity() {
                 pickRootFolder.launch(null)
                 true
             }
-            R.id.action_new_from_example -> {
-                pickExample()
+            R.id.action_examples -> {
+                openExamples()
+                true
+            }
+            R.id.action_settings -> {
+                startActivity(Intent(this, SettingsActivity::class.java))
                 true
             }
             else -> super.onOptionsItemSelected(item)
@@ -218,20 +247,12 @@ class SketchListActivity : AppCompatActivity() {
         super.onDestroy()
     }
 
-    private fun pickExample() {
+    private fun openExamples() {
         if (!viewModel.state.value.hasRoot) {
             pickRootFolder.launch(null)
             return
         }
-        lifecycleScope.launch {
-            val examples = viewModel.listExamples()
-            val labels = examples.map { "${it.category} › ${it.name}" }.toTypedArray()
-            AlertDialog.Builder(this@SketchListActivity)
-                .setTitle(R.string.dialog_examples_title)
-                .setItems(labels) { _, which -> viewModel.createFromExample(examples[which]) }
-                .setNegativeButton(R.string.dialog_cancel, null)
-                .show()
-        }
+        pickExample.launch(Intent(this, ExamplesActivity::class.java))
     }
 
     private fun render(state: SketchListUiState) {
@@ -242,8 +263,10 @@ class SketchListActivity : AppCompatActivity() {
             state.sketches.isEmpty() -> getString(R.string.sketch_list_empty)
             else -> null
         }
-        binding.emptyStateText.visibility = if (emptyText == null) View.GONE else View.VISIBLE
+        binding.emptyState.visibility = if (emptyText == null) View.GONE else View.VISIBLE
         binding.emptyStateText.text = emptyText
+        // Examples need somewhere to copy to, so only offer them once a folder is chosen.
+        binding.browseExamplesButton.visibility = if (state.hasRoot) View.VISIBLE else View.GONE
     }
 
     private fun openSketch(sketch: Sketch) {
@@ -278,17 +301,33 @@ class SketchListActivity : AppCompatActivity() {
             pickRootFolder.launch(null)
             return
         }
-        val input = EditText(this)
+        val dialog = DialogNewSketchBinding.inflate(layoutInflater)
+        SketchTemplates.ids.forEachIndexed { index, id ->
+            dialog.templateChips.addView(Chip(this).apply {
+                text = getString(templateLabel(id))
+                isCheckable = true
+                isChecked = index == 0
+                tag = id
+            })
+        }
         AlertDialog.Builder(this)
             .setTitle(R.string.dialog_new_sketch_title)
-            .setView(input)
-            .setPositiveButton(R.string.dialog_ok) { _, _ -> viewModel.create(input.text.toString().trim()) }
+            .setView(dialog.root)
+            .setPositiveButton(R.string.dialog_ok) { _, _ ->
+                val chip = dialog.templateChips.findViewById<Chip>(dialog.templateChips.checkedChipId)
+                val template = chip?.tag as? String ?: SketchTemplates.BARE
+                val content = SketchTemplates.contentFor(template, AppSettings(this).board)
+                viewModel.create(dialog.sketchNameInput.text.toString().trim(), content)
+            }
             .setNegativeButton(R.string.dialog_cancel, null)
             .show()
     }
 
     private fun promptRenameSketch(sketch: Sketch) {
-        val input = EditText(this).apply { setText(sketch.name) }
+        val input = EditText(this).apply {
+            setText(sketch.name)
+            setSelection(sketch.name.length)
+        }
         AlertDialog.Builder(this)
             .setTitle(R.string.dialog_rename_title)
             .setView(input)
@@ -304,6 +343,12 @@ class SketchListActivity : AppCompatActivity() {
             .setPositiveButton(R.string.dialog_delete_confirm) { _, _ -> viewModel.delete(sketch) }
             .setNegativeButton(R.string.dialog_cancel, null)
             .show()
+    }
+
+    private fun templateLabel(id: String): Int = when (id) {
+        SketchTemplates.SERIAL -> R.string.template_serial
+        SketchTemplates.WIFI_STATION -> R.string.template_wifi_station
+        else -> R.string.template_bare
     }
 
     private companion object {

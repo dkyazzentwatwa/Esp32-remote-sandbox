@@ -1,38 +1,48 @@
 package org.espsketchide.app.examples
 
-import android.content.res.AssetManager
+import org.espsketchide.app.settings.Board
+import org.json.JSONObject
 
-/** A bundled example sketch, e.g. category "Basics", name "Blink". */
-data class Example(val category: String, val name: String, val path: String)
+/** One entry of `assets/examples/index.json`. [variants] maps a board key to a folder under `assets/examples/`. */
+data class Example(
+    val id: String,
+    val name: String,
+    val category: String,
+    val description: String,
+    val variants: Map<String, String>,
+)
 
-interface ExampleSource {
-    fun list(): List<Example>
-
-    /** File name to content for every file in the example's folder. */
-    fun files(example: Example): Map<String, String>
+/** A row of the Examples list: a category header or an example. */
+sealed interface ExampleRow {
+    data class Header(val title: String) : ExampleRow
+    data class Item(val example: Example) : ExampleRow
 }
 
-/**
- * Examples under `assets/examples/<NN.Category>/<Name>/<Name>.ino`. The `NN.` prefix only
- * orders categories and is not shown.
- */
-class AssetExampleSource(private val assets: AssetManager) : ExampleSource {
+object ExampleCatalog {
 
-    override fun list(): List<Example> =
-        assets.list(ROOT).orEmpty().sorted().flatMap { category ->
-            assets.list("$ROOT/$category").orEmpty().sorted().map { name ->
-                Example(displayCategory(category), name, "$ROOT/$category/$name")
-            }
+    fun parse(json: String): List<Example> {
+        val array = JSONObject(json).getJSONArray("examples")
+        return (0 until array.length()).map { i ->
+            val entry = array.getJSONObject(i)
+            val variants = entry.getJSONObject("variants")
+            Example(
+                id = entry.getString("id"),
+                name = entry.getString("name"),
+                category = entry.getString("category"),
+                description = entry.optString("description"),
+                variants = variants.keys().asSequence().associateWith { variants.getString(it) },
+            )
         }
-
-    override fun files(example: Example): Map<String, String> =
-        assets.list(example.path).orEmpty().associateWith { file ->
-            assets.open("${example.path}/$file").bufferedReader().use { it.readText() }
-        }
-
-    companion object {
-        private const val ROOT = "examples"
-
-        fun displayCategory(folder: String): String = folder.substringAfter('.', folder)
     }
+
+    /** Examples that have a variant for [board], grouped by category in order of first appearance. */
+    fun forBoard(examples: List<Example>, board: Board): List<Pair<String, List<Example>>> =
+        examples.filter { variantPath(it, board) != null }
+            .groupBy { it.category }
+            .toList()
+
+    fun variantPath(example: Example, board: Board): String? = example.variants[board.key]
+
+    fun rows(groups: List<Pair<String, List<Example>>>): List<ExampleRow> =
+        groups.flatMap { (category, items) -> listOf<ExampleRow>(ExampleRow.Header(category)) + items.map { ExampleRow.Item(it) } }
 }

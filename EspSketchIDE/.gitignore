@@ -14,3 +14,4 @@ build/
 *.class
 /toolchain-work/
 /spike/execprobe/build/
+.kotlin/

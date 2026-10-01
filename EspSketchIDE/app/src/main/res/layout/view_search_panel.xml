@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Find/replace panel; driven by editor/SearchController. Hidden until the Search action is used. -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@color/esp_bar"
+    android:orientation="vertical"
+    android:theme="@style/ThemeOverlay.EspSketchIDE.Bar"
+    android:visibility="gone">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingStart="12dp"
+        android:paddingEnd="4dp">
+
+        <EditText
+            android:id="@+id/searchField"
+            android:layout_width="0dp"
+            android:layout_height="48dp"
+            android:layout_weight="1"
+            android:autofillHints="none"
+            android:background="@null"
+            android:hint="@string/search_hint"
+            android:imeOptions="actionSearch"
+            android:importantForAutofill="no"
+            android:inputType="text"
+            android:maxLines="1"
+            android:textColor="@color/esp_on_bar"
+            android:textColorHint="@color/esp_on_bar_muted"
+            android:textSize="14sp" />
+
+        <TextView
+            android:id="@+id/searchCount"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="4dp"
+            android:textColor="@color/esp_on_bar_muted"
+            android:textSize="12sp" />
+
+        <ImageButton
+            android:id="@+id/searchPrevious"
+            android:layout_width="40dp"
+            android:layout_height="48dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="@string/search_previous"
+            android:src="@drawable/ic_keyboard_arrow_up"
+            app:tint="@color/esp_on_bar" />
+
+        <ImageButton
+            android:id="@+id/searchNext"
+            android:layout_width="40dp"
+            android:layout_height="48dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="@string/search_next"
+            android:src="@drawable/ic_keyboard_arrow_down"
+            app:tint="@color/esp_on_bar" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/searchMatchCase"
+            style="@style/Widget.Material3.Button.TextButton"
+            android:layout_width="40dp"
+            android:layout_height="36dp"
+            android:contentDescription="@string/search_match_case"
+            android:insetLeft="0dp"
+            android:insetRight="0dp"
+            android:minWidth="0dp"
+            android:padding="0dp"
+            android:text="@string/search_match_case_label"
+            android:textAllCaps="false"
+            android:textColor="@color/search_toggle_text"
+            android:textSize="13sp"
+            app:backgroundTint="@color/search_toggle_bg"
+            app:cornerRadius="6dp" />
+
+        <ImageButton
+            android:id="@+id/searchToggleReplace"
+            android:layout_width="40dp"
+            android:layout_height="48dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="@string/search_toggle_replace"
+            android:src="@drawable/ic_expand_more"
+            app:tint="@color/esp_on_bar" />
+
+        <ImageButton
+            android:id="@+id/searchClose"
+            android:layout_width="40dp"
+            android:layout_height="48dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="@string/search_close"
+            android:src="@drawable/ic_close"
+            app:tint="@color/esp_on_bar" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/replaceRow"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingStart="12dp"
+        android:paddingEnd="4dp"
+        android:visibility="gone">
+
+        <EditText
+            android:id="@+id/replaceField"
+            android:layout_width="0dp"
+            android:layout_height="48dp"
+            android:layout_weight="1"
+            android:autofillHints="none"
+            android:background="@null"
+            android:hint="@string/replace_hint"
+            android:importantForAutofill="no"
+            android:inputType="text"
+            android:maxLines="1"
+            android:textColor="@color/esp_on_bar"
+            android:textColorHint="@color/esp_on_bar_muted"
+            android:textSize="14sp" />
+
+        <Button
+            android:id="@+id/replaceOne"
+            style="@style/Widget.Material3.Button.TextButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/action_replace"
+            android:textAllCaps="false" />
+
+        <Button
+            android:id="@+id/replaceAll"
+            style="@style/Widget.Material3.Button.TextButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/action_replace_all"
+            android:textAllCaps="false" />
+    </LinearLayout>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@color/esp_divider" />
+</LinearLayout>

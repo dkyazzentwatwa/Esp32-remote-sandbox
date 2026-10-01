@@ -14,8 +14,6 @@ import org.espsketchide.app.data.InMemoryStorage
 import org.espsketchide.app.data.SketchRepository
 import org.espsketchide.app.data.SketchStorage
 import org.espsketchide.app.data.StorageNode
-import org.espsketchide.app.examples.Example
-import org.espsketchide.app.examples.ExampleSource
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
@@ -25,12 +23,8 @@ class SketchListViewModelTest {
 
     private val dispatcher = StandardTestDispatcher()
     private val storage = InMemoryStorage()
-    private val blink = Example("Basics", "Blink", "examples/01.Basics/Blink")
-    private val examples = object : ExampleSource {
-        override fun list() = listOf(blink)
-        override fun files(example: Example) = mapOf("Blink.ino" to "void setup() {}\nvoid loop() {}\n")
-    }
-    private val vm = SketchListViewModel(SketchRepository(storage), examples, dispatcher)
+    private val blinkFiles = mapOf("Blink.ino" to "void setup() {}\nvoid loop() {}\n")
+    private val vm = SketchListViewModel(SketchRepository(storage), dispatcher)
 
     @Before
     fun setUp() = Dispatchers.setMain(dispatcher)
@@ -70,7 +64,7 @@ class SketchListViewModelTest {
 
     @Test
     fun noRootIsReported() = runTest(dispatcher) {
-        val noRoot = SketchListViewModel(SketchRepository(InMemoryStorage(hasRoot = false)), examples, dispatcher)
+        val noRoot = SketchListViewModel(SketchRepository(InMemoryStorage(hasRoot = false)), dispatcher)
         noRoot.refresh()
         advanceUntilIdle()
 
@@ -82,7 +76,7 @@ class SketchListViewModelTest {
         val broken = object : SketchStorage by storage {
             override fun children(dir: StorageNode): List<StorageNode> = throw SecurityException("revoked")
         }
-        val brokenVm = SketchListViewModel(SketchRepository(broken), examples, dispatcher)
+        val brokenVm = SketchListViewModel(SketchRepository(broken), dispatcher)
         brokenVm.refresh()
         advanceUntilIdle()
 
@@ -92,7 +86,7 @@ class SketchListViewModelTest {
 
     @Test
     fun exampleIsCopiedAndOpened() = runTest(dispatcher) {
-        vm.createFromExample(blink)
+        vm.createFrom("Blink", blinkFiles)
         advanceUntilIdle()
 
         assertThat(vm.open.first().name).isEqualTo("Blink")
@@ -102,8 +96,8 @@ class SketchListViewModelTest {
 
     @Test
     fun exampleCopyFailureIsReported() = runTest(dispatcher) {
-        val noRoot = SketchListViewModel(SketchRepository(InMemoryStorage(hasRoot = false)), examples, dispatcher)
-        noRoot.createFromExample(blink)
+        val noRoot = SketchListViewModel(SketchRepository(InMemoryStorage(hasRoot = false)), dispatcher)
+        noRoot.createFrom("Blink", blinkFiles)
         advanceUntilIdle()
 
         assertThat(noRoot.errors.first()).isEqualTo(SketchListError(R.string.error_example_copy_failed, "Blink"))

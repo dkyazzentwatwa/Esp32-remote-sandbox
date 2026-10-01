@@ -2,6 +2,8 @@ package org.espsketchide.app
 
 import android.content.Intent
 import android.content.res.Configuration
+import android.graphics.Typeface
+import android.util.TypedValue
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
@@ -10,10 +12,13 @@ import android.view.WindowManager
 import android.widget.EditText
 import android.widget.ScrollView
 import android.widget.TextView
+import androidx.activity.OnBackPressedCallback
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
+import androidx.core.content.res.ResourcesCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
@@ -28,14 +33,19 @@ import kotlinx.coroutines.withContext
 import org.espsketchide.app.compile.BuildState
 import org.espsketchide.app.compile.Diagnostic
 import org.espsketchide.app.databinding.ActivityEditorBinding
+import io.github.rosemoe.sora.lang.EmptyLanguage
+import io.github.rosemoe.sora.widget.schemes.SchemeDarcula
+import io.github.rosemoe.sora.widget.schemes.SchemeGitHub
 import org.espsketchide.app.editor.EditorEvent
-import org.espsketchide.app.editor.EditorPrefs
-import org.espsketchide.app.editor.FontSize
+import org.espsketchide.app.editor.EditorLanguages
 import org.espsketchide.app.editor.EditorUiState
 import org.espsketchide.app.editor.EditorViewModel
-import org.espsketchide.app.editor.Highlighting
-import org.espsketchide.app.editor.SourceKind
-import org.espsketchide.app.editor.sourceKindFor
+import org.espsketchide.app.editor.FontSize
+import org.espsketchide.app.editor.SearchController
+import org.espsketchide.app.editor.SymbolBarSymbols
+import org.espsketchide.app.settings.AppSettings
+import org.espsketchide.app.settings.Board
+import org.espsketchide.app.settings.SettingsActivity
 import org.espsketchide.app.model.Sketch
 import org.espsketchide.app.ui.Insets
 import org.espsketchide.app.model.SketchFile
@@ -66,11 +76,23 @@ class EditorActivity : AppCompatActivity() {
     private var renderedFiles: List<SketchFile> = emptyList()
     private var appliedVersion = 0
 
-    private lateinit var prefs: EditorPrefs
+    private lateinit var settings: AppSettings
+    private lateinit var searchController: SearchController
 
     private var highlightingReady = false
-    private var appliedKind: SourceKind? = null
-    private var currentKind = SourceKind.CPP
+
+    /** Board family the open file's language (autocomplete list) was made for. */
+    private var languageBoard: Board? = null
+    private var languageFile: String? = null
+
+    /** True while the editor text is replaced from the view model, so that isn't an edit. */
+    private var loadingText = false
+
+    private var renderedUnsaved: Set<String> = emptySet()
+
+    private val closeSearchOnBack = object : OnBackPressedCallback(false) {
+        override fun handleOnBackPressed() = searchController.hide()
+    }
 
     /** True while tabs are changed programmatically, so selection callbacks are ignored. */
     private var renderingTabs = false
@@ -95,7 +117,13 @@ class EditorActivity : AppCompatActivity() {
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         supportActionBar?.title = sketch.name
 
+        settings = AppSettings(this)
+        onBackPressedDispatcher.addCallback(this, closeSearchOnBack)
         setupEditor()
+        setupSymbolBar()
+        searchController = SearchController(binding.searchPanel, binding.codeEditor) { visible ->
+            closeSearchOnBack.isEnabled = visible
+        }
         attachTabListener()
 
         lifecycleScope.launch {
@@ -113,35 +141,73 @@ class EditorActivity : AppCompatActivity() {
     }
 
     private fun setupEditor() {
-        prefs = EditorPrefs(this)
         val editor = binding.codeEditor
-        editor.setTextSize(prefs.fontSizeSp)
         editor.setScalable(true)
         editor.setScaleTextSizes(spToPx(FontSize.MIN), spToPx(FontSize.MAX))
-        editor.subscribeEvent(ContentChangeEvent::class.java) { _, _ -> invalidateOptionsMenu() }
-
-        binding.symbolBar.bindEditor(editor)
-        binding.symbolBar.addSymbols(SYMBOLS.map { if (it == "\t") "⇥" else it }.toTypedArray(), SYMBOLS)
+        val mono = ResourcesCompat.getFont(this, R.font.jetbrains_mono_regular) ?: Typeface.MONOSPACE
+        editor.setTypefaceText(mono)
+        editor.setTypefaceLineNumber(mono)
+        editor.setTabWidth(2)
+        editor.subscribeEvent(ContentChangeEvent::class.java) { _, _ ->
+            // Keep the view model's copy current so unsaved tabs get their "•".
+            if (!loadingText) pushEditorText()
+            invalidateOptionsMenu()
+        }
 
         val isDarkMode = (resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK) ==
             Configuration.UI_MODE_NIGHT_YES
-        lifecycleScope.launch {
-            try {
-                withContext(Dispatchers.Default) { Highlighting.load(applicationContext) }
-                binding.codeEditor.colorScheme = Highlighting.colorScheme(isDarkMode)
-                highlightingReady = true
-                applyLanguage()
-            } catch (e: Exception) {
-                // Highlighting is a nicety; editing must keep working without it.
+        // Plain colors until highlighting is ready. Usually it already is (EspSketchApp starts
+        // loading at launch), and whenReady replaces them before the first frame.
+        editor.colorScheme = if (isDarkMode) SchemeDarcula() else SchemeGitHub()
+        EditorLanguages.whenReady(this) { ok ->
+            if (isDestroyed) return@whenReady
+            if (!ok) {
                 Snackbar.make(binding.root, R.string.error_highlighting_failed, Snackbar.LENGTH_SHORT).show()
+                return@whenReady
             }
+            editor.colorScheme = EditorLanguages.colorScheme(isDarkMode)
+            highlightingReady = true
+            applyLanguage(force = true)
         }
     }
 
-    private fun applyLanguage() {
-        if (!highlightingReady || appliedKind == currentKind) return
-        binding.codeEditor.setEditorLanguage(Highlighting.language(currentKind))
-        appliedKind = currentKind
+    private fun setupSymbolBar() {
+        val bar = binding.symbolBar
+        bar.bindEditor(binding.codeEditor)
+        bar.addSymbols(SymbolBarSymbols.display, SymbolBarSymbols.insert)
+        val mono = ResourcesCompat.getFont(this, R.font.jetbrains_mono_regular) ?: Typeface.MONOSPACE
+        val color = ContextCompat.getColor(this, R.color.esp_on_bar)
+        val ripple = TypedValue().also { theme.resolveAttribute(android.R.attr.selectableItemBackground, it, true) }
+        val minWidth = (SYMBOL_MIN_WIDTH_DP * resources.displayMetrics.density).toInt()
+        bar.setTextColor(color)
+        bar.forEachButton { button ->
+            button.typeface = mono
+            button.setTextColor(color)
+            button.isAllCaps = false
+            button.setBackgroundResource(ripple.resourceId)
+            button.minWidth = 0
+            button.minimumWidth = minWidth
+        }
+    }
+
+    /** Sets the TextMate language for the open file; the autocomplete list depends on the board family. */
+    private fun applyLanguage(force: Boolean = false) {
+        val file = viewModel.state.value.document?.file?.name ?: return
+        val board = settings.board
+        if (!force && file == languageFile && board == languageBoard) return
+        binding.codeEditor.setEditorLanguage(
+            if (highlightingReady) EditorLanguages.languageFor(file, board) else EmptyLanguage()
+        )
+        languageFile = file
+        languageBoard = board
+    }
+
+    /** Settings can change while this screen is in the back stack. */
+    private fun applyEditorSettings() {
+        binding.codeEditor.setTextSize(settings.editorFontSize.toFloat())
+        binding.codeEditor.setWordwrap(settings.wordWrap)
+        binding.symbolBarScroll.visibility = if (settings.showSymbolBar) View.VISIBLE else View.GONE
+        applyLanguage()
     }
 
     /** Attached once; tab rebuilds are guarded by [renderingTabs]. */
@@ -164,10 +230,14 @@ class EditorActivity : AppCompatActivity() {
             renderingTabs = true
             binding.fileTabLayout.removeAllTabs()
             state.files.forEach { file ->
-                binding.fileTabLayout.addTab(binding.fileTabLayout.newTab().setText(file.name), false)
+                binding.fileTabLayout.addTab(binding.fileTabLayout.newTab().setText(tabLabel(file, state.unsaved)), false)
             }
             renderedFiles = state.files
+            renderedUnsaved = state.unsaved
             renderingTabs = false
+        } else if (state.unsaved != renderedUnsaved) {
+            renderedFiles.forEachIndexed { i, file -> binding.fileTabLayout.getTabAt(i)?.text = tabLabel(file, state.unsaved) }
+            renderedUnsaved = state.unsaved
         }
 
         val document = state.document ?: return
@@ -178,16 +248,21 @@ class EditorActivity : AppCompatActivity() {
             renderingTabs = false
         }
         if (document.version != appliedVersion) {
-            currentKind = sourceKindFor(document.file.name)
             applyLanguage()
+            loadingText = true
             binding.codeEditor.setText(document.text)
+            loadingText = false
             appliedVersion = document.version
+            searchController.refresh()
         }
         pendingJump?.takeIf { it.file == document.file.name }?.let { jump ->
             pendingJump = null
             binding.codeEditor.post { moveCursor(jump) }
         }
     }
+
+    private fun tabLabel(file: SketchFile, unsaved: Set<String>): String =
+        if (file.id in unsaved) getString(R.string.editor_unsaved_indicator, file.name) else file.name
 
     // --- Verify / Upload -------------------------------------------------------------------
 
@@ -320,6 +395,11 @@ class EditorActivity : AppCompatActivity() {
             Snackbar.make(binding.root, R.string.error_busy, Snackbar.LENGTH_SHORT).show()
             return@afterExperimentalNotice
         }
+        if (settings.board != Board.ESP32) {
+            // The bundled compiler and board pack are ESP32 only; don't build for the wrong chip.
+            Snackbar.make(binding.root, R.string.error_board_not_supported, Snackbar.LENGTH_LONG).show()
+            return@afterExperimentalNotice
+        }
         pushEditorText()
         lifecycleScope.launch {
             if (!viewModel.saveBeforeBuild()) return@launch
@@ -369,6 +449,7 @@ class EditorActivity : AppCompatActivity() {
     private fun handleEvent(event: EditorEvent) {
         val message = when (event) {
             is EditorEvent.Saved -> getString(R.string.saved_toast)
+            is EditorEvent.NothingToSave -> getString(R.string.nothing_to_save)
             is EditorEvent.Error -> getString(event.message, event.arg)
         }
         Snackbar.make(binding.root, message, Snackbar.LENGTH_SHORT).show()
@@ -381,11 +462,21 @@ class EditorActivity : AppCompatActivity() {
 
     override fun onPause() {
         super.onPause()
-        if (::prefs.isInitialized) prefs.fontSizeSp = pxToSp(binding.codeEditor.textSizePx)
+        if (::settings.isInitialized) settings.editorFontSize = Math.round(pxToSp(binding.codeEditor.textSizePx))
         if (::sketch.isInitialized) {
             pushEditorText()
             viewModel.saveInBackground()
         }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        if (::settings.isInitialized) applyEditorSettings()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        if (::binding.isInitialized) binding.codeEditor.release()
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -412,8 +503,12 @@ class EditorActivity : AppCompatActivity() {
                 }
             }
         }
-        menu.findItem(R.id.action_undo)?.isEnabled = binding.codeEditor.canUndo()
-        menu.findItem(R.id.action_redo)?.isEnabled = binding.codeEditor.canRedo()
+        menu.findItem(R.id.action_undo)?.let { setEnabledDimmed(it, binding.codeEditor.canUndo()) }
+        menu.findItem(R.id.action_redo)?.let { setEnabledDimmed(it, binding.codeEditor.canRedo()) }
+        // With Verify/Upload in the bar there's no room for Save; it autosaves and every build saves.
+        menu.findItem(R.id.action_save)?.setShowAsAction(
+            if (compile) MenuItem.SHOW_AS_ACTION_NEVER else MenuItem.SHOW_AS_ACTION_ALWAYS
+        )
         return super.onPrepareOptionsMenu(menu)
     }
 
@@ -429,12 +524,12 @@ class EditorActivity : AppCompatActivity() {
                 invalidateOptionsMenu()
                 true
             }
-            R.id.action_text_larger -> {
-                setFontSize(FontSize.larger(pxToSp(binding.codeEditor.textSizePx)))
+            R.id.action_search -> {
+                searchController.toggle()
                 true
             }
-            R.id.action_text_smaller -> {
-                setFontSize(FontSize.smaller(pxToSp(binding.codeEditor.textSizePx)))
+            R.id.action_settings -> {
+                startActivity(Intent(this, SettingsActivity::class.java))
                 true
             }
             android.R.id.home -> {
@@ -483,9 +578,10 @@ class EditorActivity : AppCompatActivity() {
             .show()
     }
 
-    private fun setFontSize(sp: Float) {
-        binding.codeEditor.setTextSize(sp)
-        prefs.fontSizeSp = sp
+    /** Toolbar icons are tinted by the theme, so a disabled one has to be dimmed by hand. */
+    private fun setEnabledDimmed(item: MenuItem, enabled: Boolean) {
+        item.isEnabled = enabled
+        item.icon?.mutate()?.alpha = if (enabled) ALPHA_ENABLED else ALPHA_DISABLED
     }
 
     private fun spToPx(sp: Float): Float = sp * resources.displayMetrics.density * resources.configuration.fontScale
@@ -493,11 +589,9 @@ class EditorActivity : AppCompatActivity() {
     private fun pxToSp(px: Float): Float = px / (resources.displayMetrics.density * resources.configuration.fontScale)
 
     companion object {
-        /** Symbol bar keys; "\t" is shown as ⇥ and inserts indentation. */
-        private val SYMBOLS = arrayOf(
-            "\t", "{", "}", "(", ")", ";", "<", ">", "=", "\"", "'", "#", "&", "|",
-            "[", "]", "/", "*", "+", "-", "!", "_", ",", "."
-        )
+        private const val ALPHA_ENABLED = 255
+        private const val ALPHA_DISABLED = 90
+        private const val SYMBOL_MIN_WIDTH_DP = 40
 
         private const val KEY_EXPERIMENTAL_SEEN = "compile_experimental_seen"
         private const val MAX_DIAGNOSTICS = 50

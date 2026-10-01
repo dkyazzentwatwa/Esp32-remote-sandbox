@@ -8,15 +8,21 @@
         android:id="@+id/appBar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/esp_primary_dark">
+        android:background="@color/esp_bar"
+        android:theme="@style/ThemeOverlay.EspSketchIDE.Bar"
+        app:elevation="0dp"
+        app:liftOnScroll="false">
 
-        <androidx.appcompat.widget.Toolbar
+        <com.google.android.material.appbar.MaterialToolbar
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
-            android:background="@color/esp_primary"
-            android:theme="@style/ThemeOverlay.Material3.Dark.ActionBar"
             app:title="@string/sketch_list_title" />
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="@color/esp_divider" />
 
     </com.google.android.material.appbar.AppBarLayout>
 
@@ -28,16 +34,34 @@
         android:paddingBottom="88dp"
         app:layout_behavior="@string/appbar_scrolling_view_behavior" />
 
-    <TextView
-        android:id="@+id/emptyStateText"
+    <LinearLayout
+        android:id="@+id/emptyState"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
-        android:gravity="center"
+        android:gravity="center_horizontal"
+        android:orientation="vertical"
         android:padding="32dp"
-        android:text="@string/sketch_list_empty"
-        android:textAppearance="?attr/textAppearanceBodyLarge"
-        android:visibility="gone" />
+        android:visibility="gone">
+
+        <TextView
+            android:id="@+id/emptyStateText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:text="@string/sketch_list_empty"
+            android:textAppearance="?attr/textAppearanceBodyLarge"
+            android:textColor="?attr/colorOnSurfaceVariant" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/browseExamplesButton"
+            style="@style/Widget.Material3.Button.OutlinedButton.Icon"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="@string/browse_examples"
+            app:icon="@drawable/ic_menu_book" />
+    </LinearLayout>
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/newSketchFab"
@@ -46,7 +70,8 @@
         android:layout_gravity="bottom|end"
         android:layout_margin="16dp"
         android:contentDescription="@string/action_new_sketch"
-        android:src="@android:drawable/ic_input_add"
-        app:backgroundTint="@color/esp_accent" />
+        android:src="@drawable/ic_add"
+        app:backgroundTint="@color/esp_accent"
+        app:tint="@color/esp_on_accent" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

@@ -18,8 +18,6 @@ import org.espsketchide.app.data.SketchDeleteFailedException
 import org.espsketchide.app.data.SketchNameInvalidException
 import org.espsketchide.app.data.SketchRenameFailedException
 import org.espsketchide.app.data.SketchRepository
-import org.espsketchide.app.examples.Example
-import org.espsketchide.app.examples.ExampleSource
 import org.espsketchide.app.model.Sketch
 
 data class SketchListUiState(
@@ -32,7 +30,6 @@ data class SketchListError(@StringRes val message: Int, val arg: String? = null)
 
 class SketchListViewModel(
     private val repository: SketchRepository,
-    private val examples: ExampleSource,
     private val io: CoroutineDispatcher = Dispatchers.IO
 ) : ViewModel() {
 
@@ -46,15 +43,17 @@ class SketchListViewModel(
     private val _open = Channel<Sketch>(Channel.BUFFERED)
     val open = _open.receiveAsFlow()
 
-    suspend fun listExamples(): List<Example> = withContext(io) { examples.list() }
-
-    fun createFromExample(example: Example) {
+    /**
+     * Copies [files] (name to content, e.g. a bundled example) into a new sketch named [baseName],
+     * or `baseName_2`… if taken, and opens it.
+     */
+    fun createFrom(baseName: String, files: Map<String, String>) {
         viewModelScope.launch {
             try {
-                val sketch = withContext(io) { repository.createFromFiles(example.name, examples.files(example)) }
+                val sketch = withContext(io) { repository.createFromFiles(baseName, files) }
                 _open.send(sketch)
             } catch (e: Exception) {
-                _errors.send(SketchListError(R.string.error_example_copy_failed, example.name))
+                _errors.send(SketchListError(R.string.error_example_copy_failed, baseName))
             }
             reload()
         }
@@ -64,7 +63,10 @@ class SketchListViewModel(
         viewModelScope.launch { reload() }
     }
 
-    fun create(name: String) = mutate(name) { repository.createSketch(name) }
+    /** Creates a sketch with [content] (e.g. a template), or the repository's default sketch if null. */
+    fun create(name: String, content: String? = null) = mutate(name) {
+        if (content == null) repository.createSketch(name) else repository.createSketch(name, content)
+    }
 
     fun rename(sketch: Sketch, newName: String) = mutate(newName, original = sketch.name) {
         repository.renameSketch(sketch, newName)

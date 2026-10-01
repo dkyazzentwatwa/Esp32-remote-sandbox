@@ -50,12 +50,13 @@ jobs:
     runs-on: ubuntu-24.04
     env:
       ESP32_CORE: "3.3.12"
+      ESP8266_CORE: "3.1.2"
     steps:
       - uses: actions/checkout@v4
       - uses: actions/cache@v4
         with:
           path: ~/.arduino15
-          key: arduino15-esp32-${{ env.ESP32_CORE }}
+          key: arduino15-esp32-${{ env.ESP32_CORE }}-esp8266-${{ env.ESP8266_CORE }}
       - name: Install arduino-cli and the ESP32 core
         run: |
           curl -fsSL https://downloads.arduino.cc/arduino-cli/arduino-cli_latest_Linux_64bit.tar.gz | tar xz -C "$RUNNER_TEMP" arduino-cli
@@ -78,12 +79,10 @@ jobs:
         with:
           name: buildengine-golden-results
           path: EspSketchIDE/buildengine/build/test-results/
-      - name: Compile every example for ESP32 Dev Module
+      - name: Install the ESP8266 core
         run: |
-          status=0
-          for dir in app/src/main/assets/examples/*/*/; do
-            echo "::group::$dir"
-            arduino-cli compile --fqbn esp32:esp32:esp32 "$dir" || status=1
-            echo "::endgroup::"
-          done
-          exit $status
+          arduino-cli config add board_manager.additional_urls https://arduino.esp8266.com/stable/package_esp8266com_index.json
+          arduino-cli core update-index
+          arduino-cli core install "esp8266:esp8266@$ESP8266_CORE"
+      - name: Compile every example variant for its board (ESP32 Dev Module, NodeMCU 1.0)
+        run: tools/compile-examples.py

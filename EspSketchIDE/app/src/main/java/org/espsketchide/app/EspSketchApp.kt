@@ -1,6 +1,7 @@
 package org.espsketchide.app
 
 import android.app.Application
+import androidx.appcompat.app.AppCompatDelegate
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -15,11 +16,19 @@ import org.espsketchide.app.compile.SketchStager
 import org.espsketchide.app.compile.Toolchain
 import org.espsketchide.app.data.DocumentFileStorage
 import org.espsketchide.app.data.SketchRepository
+import org.espsketchide.app.editor.EditorLanguages
+import org.espsketchide.app.settings.AppSettings
 import org.espsketchide.app.upload.SerialMonitor
 import org.espsketchide.buildengine.esp32.PackLayout
 import java.io.File
 
 class EspSketchApp : Application() {
+
+    override fun onCreate() {
+        super.onCreate()
+        AppCompatDelegate.setDefaultNightMode(AppSettings(this).themeMode.nightMode)
+        EditorLanguages.init(this)
+    }
 
     /** For work that must finish even after the screen that started it is gone (e.g. autosave). */
     val appScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)

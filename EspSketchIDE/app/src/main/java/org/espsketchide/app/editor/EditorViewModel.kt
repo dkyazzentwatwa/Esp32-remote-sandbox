@@ -28,12 +28,15 @@ data class OpenDocument(val file: SketchFile, val text: String, val version: Int
 
 data class EditorUiState(
     val files: List<SketchFile> = emptyList(),
-    val document: OpenDocument? = null
+    val document: OpenDocument? = null,
+    /** Ids of files whose text differs from what is stored; their tabs show "name •". */
+    val unsaved: Set<String> = emptySet()
 )
 
 sealed interface EditorEvent {
     data class Error(@StringRes val message: Int, val arg: String? = null) : EditorEvent
     data object Saved : EditorEvent
+    data object NothingToSave : EditorEvent
 }
 
 /**
@@ -71,7 +74,7 @@ class EditorViewModel(
         val document = _state.value.document ?: return
         buffers[document.file.id] = text
         // Same version: the current screen already shows this text, but a recreated one needs it.
-        _state.update { it.copy(document = document.copy(text = text)) }
+        _state.update { it.copy(document = document.copy(text = text), unsaved = unsavedIds()) }
     }
 
     fun selectFile(file: SketchFile) {
@@ -84,7 +87,11 @@ class EditorViewModel(
 
     fun save() {
         viewModelScope.launch {
-            if (saveDirty(reportErrors = true)) _events.send(EditorEvent.Saved)
+            if (unsavedIds().isEmpty()) {
+                _events.send(EditorEvent.NothingToSave)
+            } else if (saveDirty(reportErrors = true)) {
+                _events.send(EditorEvent.Saved)
+            }
         }
     }
 
@@ -154,6 +161,9 @@ class EditorViewModel(
                 if (reportErrors) _events.send(EditorEvent.Error(R.string.error_save_failed, file.name))
             }
         }
+        _state.update { it.copy(unsaved = unsavedIds()) }
         ok
     }
+
+    private fun unsavedIds(): Set<String> = buffers.filter { (id, text) -> persisted[id] != text }.keys.toSet()
 }

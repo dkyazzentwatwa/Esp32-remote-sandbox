@@ -2,16 +2,20 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <item
-        android:id="@+id/action_new_from_example"
-        android:title="@string/action_new_from_example"
-        app:showAsAction="never" />
-    <item
-        android:id="@+id/action_change_folder"
-        android:title="@string/action_open_folder"
+        android:id="@+id/action_examples"
+        android:title="@string/action_examples"
         app:showAsAction="never" />
     <item
         android:id="@+id/action_board_pack"
         android:title="@string/action_board_pack"
         android:visible="false"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/action_change_folder"
+        android:title="@string/action_change_folder"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/action_settings"
+        android:title="@string/action_settings"
         app:showAsAction="never" />
 </menu>

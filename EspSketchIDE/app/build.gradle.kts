@@ -118,9 +118,11 @@ dependencies {
     implementation("androidx.activity:activity-ktx:1.13.0")
     implementation("androidx.fragment:fragment-ktx:1.9.1")
     implementation("androidx.documentfile:documentfile:1.1.0")
+    implementation("androidx.preference:preference-ktx:1.2.1")
 
-    // Code editor (MIT). C/C++/Arduino highlighting uses the TextMate module with VS Code's C++
-    // grammar and our own light/dark themes, bundled under assets/textmate.
+    // Code editor (sora-editor, LGPL-2.1, used unmodified as a library). language-textmate
+    // highlights sketches with VS Code's C++ grammar plus our Arduino injection grammar
+    // (assets/textmate). See editor/EditorLanguages.kt and assets/licenses/NOTICES.md.
     implementation("io.github.Rosemoe.sora-editor:editor:0.23.6")
     implementation("io.github.Rosemoe.sora-editor:language-textmate:0.23.6")
 
@@ -128,6 +130,7 @@ dependencies {
 
     testImplementation("junit:junit:4.13.2")
     testImplementation("com.google.truth:truth:1.4.5")
+    testImplementation("org.json:json:20240303")
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.11.0")
     androidTestImplementation("androidx.test.ext:junit:1.3.0")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.7.0")

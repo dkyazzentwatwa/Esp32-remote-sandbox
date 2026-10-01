@@ -1,6 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Toolbar actions are pinned ("always"): AppCompat caps ifRoom items by screen width, not free
+     space, so on a ~411dp phone they fell into the ⋮ menu even with room beside the sketch name.
+     Verify/Upload show only when the APK bundles the compiler; Save is moved to ⋮ then
+     (EditorActivity.onPrepareOptionsMenu) because the editor autosaves and every build saves. -->
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:ignore="AlwaysShowAction">
+    <item
+        android:id="@+id/action_verify"
+        android:icon="@drawable/ic_verify"
+        android:title="@string/action_verify"
+        android:visible="false"
+        app:showAsAction="always" />
+    <item
+        android:id="@+id/action_upload"
+        android:icon="@drawable/ic_upload"
+        android:title="@string/action_upload"
+        android:visible="false"
+        app:showAsAction="always" />
     <item
         android:id="@+id/action_undo"
         android:icon="@drawable/ic_undo"
@@ -12,17 +30,15 @@
         android:title="@string/action_redo"
         app:showAsAction="always" />
     <item
-        android:id="@+id/action_verify"
-        android:icon="@drawable/ic_verify"
-        android:title="@string/action_verify"
-        android:visible="false"
-        app:showAsAction="ifRoom" />
+        android:id="@+id/action_search"
+        android:icon="@drawable/ic_search"
+        android:title="@string/action_search"
+        app:showAsAction="always" />
     <item
-        android:id="@+id/action_upload"
-        android:icon="@drawable/ic_upload"
-        android:title="@string/action_upload"
-        android:visible="false"
-        app:showAsAction="ifRoom" />
+        android:id="@+id/action_save"
+        android:icon="@drawable/ic_save"
+        android:title="@string/action_save"
+        app:showAsAction="always" />
     <item
         android:id="@+id/action_serial_monitor"
         android:title="@string/action_serial_monitor"
@@ -34,20 +50,11 @@
         android:visible="false"
         app:showAsAction="never" />
     <item
-        android:id="@+id/action_save"
-        android:icon="@android:drawable/ic_menu_save"
-        android:title="@string/action_save"
-        app:showAsAction="never" />
-    <item
         android:id="@+id/action_add_file"
         android:title="@string/action_add_file"
         app:showAsAction="never" />
     <item
-        android:id="@+id/action_text_larger"
-        android:title="@string/action_text_larger"
-        app:showAsAction="never" />
-    <item
-        android:id="@+id/action_text_smaller"
-        android:title="@string/action_text_smaller"
+        android:id="@+id/action_settings"
+        android:title="@string/action_settings"
         app:showAsAction="never" />
 </menu>
