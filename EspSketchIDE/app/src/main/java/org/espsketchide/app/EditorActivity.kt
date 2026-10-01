@@ -596,7 +596,8 @@ class EditorActivity : AppCompatActivity() {
 
     override fun onPrepareOptionsMenu(menu: Menu): Boolean {
         val compile = app.canCompile
-        for (id in listOf(R.id.action_verify, R.id.action_upload, R.id.action_serial_monitor, R.id.action_board)) {
+        // Tools (board, serial monitor) only exist in builds with the compiler.
+        for (id in listOf(R.id.action_verify, R.id.action_upload, R.id.menu_tools)) {
             menu.findItem(id)?.isVisible = compile
         }
         if (compile) {

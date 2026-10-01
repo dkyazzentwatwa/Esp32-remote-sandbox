@@ -40,35 +40,55 @@
         android:title="@string/action_save"
         app:showAsAction="always" />
     <item
-        android:id="@+id/action_serial_monitor"
-        android:title="@string/action_serial_monitor"
+        android:id="@+id/menu_sketch"
+        android:title="@string/menu_sketch"
+        app:showAsAction="never">
+        <menu>
+            <item
+                android:id="@+id/action_add_file"
+                android:title="@string/action_add_file" />
+        </menu>
+    </item>
+    <item
+        android:id="@+id/menu_edit"
+        android:title="@string/menu_edit"
+        app:showAsAction="never">
+        <menu>
+            <item
+                android:id="@+id/action_comment"
+                android:title="@string/action_comment" />
+            <item
+                android:id="@+id/action_format"
+                android:title="@string/action_format" />
+            <item
+                android:id="@+id/action_goto_line"
+                android:title="@string/action_goto_line" />
+        </menu>
+    </item>
+    <item
+        android:id="@+id/menu_tools"
+        android:title="@string/menu_tools"
         android:visible="false"
-        app:showAsAction="never" />
+        app:showAsAction="never">
+        <menu>
+            <item
+                android:id="@+id/action_board"
+                android:title="@string/action_board_none" />
+            <item
+                android:id="@+id/action_serial_monitor"
+                android:title="@string/action_serial_monitor" />
+        </menu>
+    </item>
     <item
-        android:id="@+id/action_board"
-        android:title="@string/action_board_none"
-        android:visible="false"
-        app:showAsAction="never" />
-    <item
-        android:id="@+id/action_comment"
-        android:title="@string/action_comment"
-        app:showAsAction="never" />
-    <item
-        android:id="@+id/action_format"
-        android:title="@string/action_format"
-        app:showAsAction="never" />
-    <item
-        android:id="@+id/action_goto_line"
-        android:title="@string/action_goto_line"
-        app:showAsAction="never" />
-    <item
-        android:id="@+id/action_add_file"
-        android:title="@string/action_add_file"
-        app:showAsAction="never" />
-    <item
-        android:id="@+id/action_reference"
-        android:title="@string/reference_title"
-        app:showAsAction="never" />
+        android:id="@+id/menu_help"
+        android:title="@string/menu_help"
+        app:showAsAction="never">
+        <menu>
+            <item
+                android:id="@+id/action_reference"
+                android:title="@string/reference_title" />
+        </menu>
+    </item>
     <item
         android:id="@+id/action_settings"
         android:title="@string/action_settings"
