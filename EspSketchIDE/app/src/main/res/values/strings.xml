@@ -154,4 +154,8 @@
     <string name="reference_other_board">Only available on: %1$s</string>
     <string name="reference_more">More</string>
     <string name="reference_snippet">%1$s: %2$s</string>
+    <plurals name="build_failed_errors">
+        <item quantity="one">%1$d error · tap it to jump to the line</item>
+        <item quantity="other">%1$d errors · tap one to jump to its line</item>
+    </plurals>
 </resources>

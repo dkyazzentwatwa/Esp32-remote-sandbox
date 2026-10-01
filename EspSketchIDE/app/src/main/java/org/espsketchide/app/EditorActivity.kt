@@ -331,7 +331,13 @@ class EditorActivity : AppCompatActivity() {
                 }
             }
             is BuildState.Failed -> {
-                panel.outputStatus.text = getString(R.string.build_failed, state.message)
+                // With compiler messages listed below, a count reads better than repeating the first one.
+                val errors = state.diagnostics.count { it.severity == Diagnostic.Severity.ERROR }
+                panel.outputStatus.text = if (errors > 0) {
+                    resources.getQuantityString(R.plurals.build_failed_errors, errors, errors)
+                } else {
+                    getString(R.string.build_failed, state.message)
+                }
                 state.diagnostics.filter { it.severity != Diagnostic.Severity.NOTE }.take(MAX_DIAGNOSTICS).forEach { d ->
                     panel.diagnosticsList.addView(diagnosticView(d))
                 }
