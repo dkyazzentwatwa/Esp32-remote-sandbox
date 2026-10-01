@@ -315,7 +315,7 @@ class EditorActivity : AppCompatActivity() {
         }
         val rows = panel.diagnosticsList.childCount
         panel.diagnosticsScroll.layoutParams = panel.diagnosticsScroll.layoutParams.apply {
-            height = if (rows > 4) (160 * resources.displayMetrics.density).toInt() else android.view.ViewGroup.LayoutParams.WRAP_CONTENT
+            height = if (rows > 2) (220 * resources.displayMetrics.density).toInt() else android.view.ViewGroup.LayoutParams.WRAP_CONTENT
         }
     }
 
@@ -326,15 +326,41 @@ class EditorActivity : AppCompatActivity() {
         is BuildState.Failed -> this.sketch == sketch.name
     }
 
-    private fun diagnosticView(d: Diagnostic): View = TextView(this).apply {
-        val kind = if (d.severity == Diagnostic.Severity.WARNING) "warning" else "error"
-        text = "${d.file}:${d.line}: $kind: ${d.message}"
-        setTextAppearance(com.google.android.material.R.style.TextAppearance_Material3_BodySmall)
-        typeface = android.graphics.Typeface.MONOSPACE
-        setPadding(0, 6, 0, 6)
-        if (d.inSketch) {
-            setTextColor(getColor(if (d.severity == Diagnostic.Severity.WARNING) R.color.esp_warning else R.color.esp_error))
-            setOnClickListener { jumpTo(d) }
+    /** One compiler message: where, gcc's text, and a plain-language explanation when we have one. */
+    private fun diagnosticView(d: Diagnostic): View {
+        val density = resources.displayMetrics.density
+        val warning = d.severity == Diagnostic.Severity.WARNING
+        val accent = getColor(if (warning) R.color.esp_warning else R.color.esp_error)
+        val mono = ResourcesCompat.getFont(this, R.font.jetbrains_mono_regular) ?: Typeface.MONOSPACE
+        return android.widget.LinearLayout(this).apply {
+            orientation = android.widget.LinearLayout.VERTICAL
+            setPadding(0, (6 * density).toInt(), 0, (6 * density).toInt())
+            addView(TextView(context).apply {
+                val where = if (d.inSketch) getString(R.string.diagnostic_where, d.file, d.line) else d.file
+                text = getString(if (warning) R.string.diagnostic_warning else R.string.diagnostic_error, where)
+                setTextAppearance(com.google.android.material.R.style.TextAppearance_Material3_LabelLarge)
+                setTextColor(accent)
+            })
+            addView(TextView(context).apply {
+                text = d.message
+                typeface = mono
+                setTextAppearance(com.google.android.material.R.style.TextAppearance_Material3_BodySmall)
+                typeface = mono
+            })
+            org.espsketchide.app.compile.ErrorHelp.explain(d.message)?.let { help ->
+                addView(TextView(context).apply {
+                    text = getString(R.string.diagnostic_help, help)
+                    setTextAppearance(com.google.android.material.R.style.TextAppearance_Material3_BodyMedium)
+                    setPadding(0, (2 * density).toInt(), 0, 0)
+                })
+            }
+            if (d.inSketch) {
+                background = TypedValue().let { tv ->
+                    theme.resolveAttribute(android.R.attr.selectableItemBackground, tv, true)
+                    ContextCompat.getDrawable(context, tv.resourceId)
+                }
+                setOnClickListener { jumpTo(d) }
+            }
         }
     }
 

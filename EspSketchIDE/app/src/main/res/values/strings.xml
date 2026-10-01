@@ -142,4 +142,8 @@
     <string name="template_wifi_station">WiFi station</string>
     <string name="error_board_not_supported">Compiling is only available for the ESP32 for now. Set Board to ESP32 in Settings.</string>
     <string name="editor_unsaved_indicator">%1$s •</string>
+    <string name="diagnostic_where">%1$s, line %2$d</string>
+    <string name="diagnostic_error">Error · %1$s</string>
+    <string name="diagnostic_warning">Warning · %1$s</string>
+    <string name="diagnostic_help">💡 %1$s</string>
 </resources>
