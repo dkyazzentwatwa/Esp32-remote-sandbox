@@ -17,6 +17,7 @@ import kotlinx.coroutines.withContext
 import org.espsketchide.app.databinding.ActivitySerialMonitorBinding
 import org.espsketchide.app.ui.Insets
 import org.espsketchide.app.upload.SerialMonitor
+import org.espsketchide.app.upload.SerialPlot
 import org.espsketchide.app.upload.UsbConnect
 
 /** Shows what the board prints and sends lines to it, like the Arduino IDE's Serial Monitor. */
@@ -65,6 +66,7 @@ class SerialMonitorActivity : AppCompatActivity() {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 launch {
                     monitor.text.collect { text ->
+                        if (plotting) binding.plot.setSeries(SerialPlot.series(text, PLOT_POINTS))
                         val scroll = binding.outputScroll
                         val atEnd = !scroll.canScrollVertically(1)
                         binding.output.text = text
@@ -94,7 +96,20 @@ class SerialMonitorActivity : AppCompatActivity() {
         return true
     }
 
+    /** True while the plotter replaces the text output. */
+    private var plotting = false
+
+    private fun setPlotting(on: Boolean) {
+        plotting = on
+        binding.plot.visibility = if (on) android.view.View.VISIBLE else android.view.View.GONE
+        binding.outputScroll.visibility = if (on) android.view.View.GONE else android.view.View.VISIBLE
+        supportActionBar?.setTitle(if (on) R.string.plotter_title else R.string.monitor_title)
+        if (on) app.serialMonitor?.let { binding.plot.setSeries(SerialPlot.series(it.text.value, PLOT_POINTS)) }
+        invalidateOptionsMenu()
+    }
+
     override fun onPrepareOptionsMenu(menu: Menu): Boolean {
+        menu.findItem(R.id.action_plotter)?.isChecked = plotting
         menu.findItem(R.id.action_baud)?.title = getString(R.string.monitor_baud, baud)
         return super.onPrepareOptionsMenu(menu)
     }
@@ -109,6 +124,7 @@ class SerialMonitorActivity : AppCompatActivity() {
                 true
             }
             R.id.action_baud -> { chooseBaud(); true }
+            R.id.action_plotter -> { setPlotting(!plotting); true }
             else -> super.onOptionsItemSelected(item)
         }
     }
@@ -137,6 +153,7 @@ class SerialMonitorActivity : AppCompatActivity() {
 
     private companion object {
         const val KEY_BAUD = "monitor_baud"
+        const val PLOT_POINTS = 200
         val BAUD_RATES = listOf(9600, 19200, 38400, 57600, 74880, 115200, 230400, 460800, 921600)
     }
 }

@@ -163,4 +163,6 @@
     <string name="action_goto_line">Go to line…</string>
     <string name="goto_line_hint">1 to %1$d</string>
     <string name="format_no_changes">Already formatted</string>
+    <string name="plotter_title">Serial plotter</string>
+    <string name="plotter_waiting">Waiting for numbers… print values like Serial.println(analogRead(34)); or temp:21.5 hum:40</string>
 </resources>

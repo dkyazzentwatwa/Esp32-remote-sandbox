@@ -43,6 +43,14 @@
 
     </ScrollView>
 
+    <!-- Serial Plotter: shown instead of the text output when the Plotter menu item is on. -->
+    <org.espsketchide.app.upload.PlotView
+        android:id="@+id/plot"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:visibility="gone" />
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
