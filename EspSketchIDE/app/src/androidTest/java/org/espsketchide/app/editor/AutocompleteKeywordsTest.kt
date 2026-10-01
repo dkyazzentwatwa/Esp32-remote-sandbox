@@ -19,9 +19,11 @@ class AutocompleteKeywordsTest {
         assertTrue("TextMate setup failed", EditorLanguages.awaitReady(ApplicationProvider.getApplicationContext()))
     }
 
+    /** Everything the completion popup can offer: snippet labels plus the TextMate keyword list. */
     private fun keywords(file: String, board: Board): List<String> {
-        val language = EditorLanguages.languageFor(file, board) as TextMateLanguage
-        return language.autoCompleter.keywords.toList()
+        val language = EditorLanguages.languageFor(file, board) as SnippetLanguage
+        val textMate = language.base as TextMateLanguage
+        return language.snippets.map { it.label } + textMate.autoCompleter.keywords.toList()
     }
 
     @Test
@@ -38,6 +40,13 @@ class AutocompleteKeywordsTest {
         assertTrue("D1" in words)
         assertTrue("digitalWrite" in words)
         assertFalse("ledcWrite" in words)
+    }
+
+    @Test
+    fun functionsWithASnippetAreNotAlsoPlainKeywords() {
+        val language = EditorLanguages.languageFor("blink.ino", Board.ESP32) as SnippetLanguage
+        assertTrue(language.snippets.any { it.label == "digitalWrite" })
+        assertFalse("digitalWrite" in (language.base as TextMateLanguage).autoCompleter.keywords)
     }
 
     @Test

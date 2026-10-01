@@ -17,6 +17,8 @@ import io.github.rosemoe.sora.langs.textmate.registry.provider.AssetsFileResolve
 import io.github.rosemoe.sora.widget.schemes.EditorColorScheme
 import org.espsketchide.app.settings.Board
 import org.eclipse.tm4e.core.grammar.IStateStack
+import org.espsketchide.app.reference.ArduinoReference
+import org.espsketchide.app.reference.ReferenceCards
 import org.eclipse.tm4e.core.registry.IThemeSource
 import java.util.concurrent.ExecutionException
 import java.util.concurrent.Executors
@@ -82,12 +84,22 @@ object EditorLanguages {
     fun languageFor(fileName: String, board: Board): Language {
         val extension = fileName.substringAfterLast('.', "").lowercase()
         if (extension !in HIGHLIGHTED_EXTENSIONS) return EmptyLanguage()
-        return TextMateLanguage.create(ARDUINO_SCOPE, true).apply {
+        val snippets = snippetsFor(board)
+        // Names with a snippet are offered by it (with parameters); don't list them twice.
+        val snippetNames = snippets.map { it.label }.toSet()
+        val textMate = TextMateLanguage.create(ARDUINO_SCOPE, true).apply {
             tabSize = TAB_SIZE
             useTab(false)
-            setCompleterKeywords(ArduinoApi.keywordsFor(board).toTypedArray())
+            setCompleterKeywords(ArduinoApi.keywordsFor(board).filter { it !in snippetNames }.toTypedArray())
         }
+        return SnippetLanguage(textMate, snippets)
     }
+
+    @Volatile
+    private var reference: ArduinoReference? = null
+
+    private fun snippetsFor(board: Board): List<ArduinoSnippet> =
+        reference?.let { ArduinoSnippets.from(it, board) }.orEmpty()
 
     /** Switches the shared theme registry to the dark or light theme and returns a scheme that follows it. */
     fun colorScheme(isDark: Boolean): EditorColorScheme {
@@ -104,6 +116,7 @@ object EditorLanguages {
         loadTheme(themes, THEME_LIGHT, isDark = false)
         themes.setTheme(THEME_DARK)
         GrammarRegistry.getInstance().loadGrammars("textmate/languages.json")
+        reference = runCatching { ReferenceCards.load(context) }.getOrNull()
         warmUp()
         Log.i(TAG, "TextMate ready in ${SystemClock.elapsedRealtime() - start} ms")
     }
