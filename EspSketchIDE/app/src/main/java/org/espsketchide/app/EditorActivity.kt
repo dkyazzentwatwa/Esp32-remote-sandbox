@@ -27,6 +27,7 @@ import androidx.lifecycle.viewmodel.viewModelFactory
 import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.tabs.TabLayout
 import io.github.rosemoe.sora.event.ContentChangeEvent
+import io.github.rosemoe.sora.event.LongPressEvent
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -46,6 +47,7 @@ import org.espsketchide.app.editor.SymbolBarSymbols
 import org.espsketchide.app.settings.AppSettings
 import org.espsketchide.app.settings.Board
 import org.espsketchide.app.settings.SettingsActivity
+import org.espsketchide.app.reference.ReferenceCards
 import org.espsketchide.app.model.Sketch
 import org.espsketchide.app.ui.Insets
 import org.espsketchide.app.model.SketchFile
@@ -148,6 +150,8 @@ class EditorActivity : AppCompatActivity() {
         editor.setTypefaceText(mono)
         editor.setTypefaceLineNumber(mono)
         editor.setTabWidth(2)
+        // Long-press a known Arduino name for a quick explanation (the word still gets selected).
+        editor.subscribeEvent(LongPressEvent::class.java) { event, _ -> showReferenceAt(event.line, event.column) }
         editor.subscribeEvent(ContentChangeEvent::class.java) { _, _ ->
             // Keep the view model's copy current so unsaved tabs get their "•".
             if (!loadingText) pushEditorText()
@@ -168,6 +172,26 @@ class EditorActivity : AppCompatActivity() {
             editor.colorScheme = EditorLanguages.colorScheme(isDarkMode)
             highlightingReady = true
             applyLanguage(force = true)
+        }
+    }
+
+    private fun showReferenceAt(line: Int, column: Int) {
+        val text = binding.codeEditor.text.getLineString(line)
+        lifecycleScope.launch {
+            val reference = withContext(Dispatchers.IO) { ReferenceCards.load(applicationContext) }
+            val entry = reference.lookupAt(text, column) ?: return@launch
+            // Anchored above the symbol bar: if it times out under a finger, the tap must not type a symbol.
+            Snackbar.make(binding.root, getString(R.string.reference_snippet, entry.name, entry.summary), REFERENCE_SNACKBAR_MS)
+                .setAnchorView(if (binding.symbolBarScroll.visibility == View.VISIBLE) binding.symbolBarScroll else null)
+                .setAction(R.string.reference_more) { ReferenceCards.show(this@EditorActivity, entry, settings.board) }
+                .show()
+        }
+    }
+
+    private fun showReferenceIndex() {
+        lifecycleScope.launch {
+            val reference = withContext(Dispatchers.IO) { ReferenceCards.load(applicationContext) }
+            ReferenceCards.showIndex(this@EditorActivity, reference, settings.board)
         }
     }
 
@@ -558,6 +582,10 @@ class EditorActivity : AppCompatActivity() {
                 startActivity(Intent(this, SettingsActivity::class.java))
                 true
             }
+            R.id.action_reference -> {
+                showReferenceIndex()
+                true
+            }
             android.R.id.home -> {
                 finish()
                 true
@@ -618,6 +646,7 @@ class EditorActivity : AppCompatActivity() {
         private const val ALPHA_ENABLED = 255
         private const val ALPHA_DISABLED = 90
         private const val SYMBOL_MIN_WIDTH_DP = 40
+        private const val REFERENCE_SNACKBAR_MS = 6000
 
         private const val KEY_EXPERIMENTAL_SEEN = "compile_experimental_seen"
         private const val MAX_DIAGNOSTICS = 50

@@ -146,4 +146,12 @@
     <string name="diagnostic_error">Error · %1$s</string>
     <string name="diagnostic_warning">Warning · %1$s</string>
     <string name="diagnostic_help">💡 %1$s</string>
+    <string name="reference_title">Arduino reference</string>
+    <string name="reference_parameters">Parameters</string>
+    <string name="reference_returns">Returns</string>
+    <string name="reference_example">Example</string>
+    <string name="reference_note">💡 %1$s</string>
+    <string name="reference_other_board">Only available on: %1$s</string>
+    <string name="reference_more">More</string>
+    <string name="reference_snippet">%1$s: %2$s</string>
 </resources>

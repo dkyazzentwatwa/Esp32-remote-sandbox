@@ -54,6 +54,10 @@
         android:title="@string/action_add_file"
         app:showAsAction="never" />
     <item
+        android:id="@+id/action_reference"
+        android:title="@string/reference_title"
+        app:showAsAction="never" />
+    <item
         android:id="@+id/action_settings"
         android:title="@string/action_settings"
         app:showAsAction="never" />
