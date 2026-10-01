@@ -38,6 +38,7 @@ import io.github.rosemoe.sora.lang.EmptyLanguage
 import io.github.rosemoe.sora.widget.schemes.SchemeDarcula
 import io.github.rosemoe.sora.widget.schemes.SchemeGitHub
 import org.espsketchide.app.editor.EditorEvent
+import org.espsketchide.app.editor.CodeTools
 import org.espsketchide.app.editor.EditorLanguages
 import org.espsketchide.app.editor.EditorUiState
 import org.espsketchide.app.editor.EditorViewModel
@@ -186,6 +187,56 @@ class EditorActivity : AppCompatActivity() {
                 .setAction(R.string.reference_more) { ReferenceCards.show(this@EditorActivity, entry, settings.board) }
                 .show()
         }
+    }
+
+    /** Comments or uncomments the selected lines (or the cursor's line) as one undoable edit. */
+    private fun toggleComment() {
+        val editor = binding.codeEditor
+        val cursor = editor.cursor
+        val first = cursor.leftLine
+        val last = cursor.rightLine
+        val text = editor.text
+        val lines = (first..last).map { text.getLineString(it) }
+        val toggled = CodeTools.toggleComment(lines)
+        if (toggled == lines) return
+        text.replace(first, 0, last, text.getColumnCount(last), toggled.joinToString("\n"))
+    }
+
+    /** Re-indents the whole file like the Arduino IDE's Auto Format; undoable, cursor stays on its line. */
+    private fun autoFormat() {
+        val editor = binding.codeEditor
+        val text = editor.text
+        val original = text.toString()
+        val formatted = CodeTools.format(original)
+        if (formatted == original) {
+            Snackbar.make(binding.root, R.string.format_no_changes, Snackbar.LENGTH_SHORT).show()
+            return
+        }
+        val line = editor.cursor.leftLine
+        val last = text.lineCount - 1
+        text.replace(0, 0, last, text.getColumnCount(last), formatted)
+        val target = line.coerceAtMost(text.lineCount - 1)
+        editor.setSelection(target, text.getColumnCount(target))
+    }
+
+    private fun promptGoToLine() {
+        val editor = binding.codeEditor
+        val input = EditText(this).apply {
+            inputType = android.text.InputType.TYPE_CLASS_NUMBER
+            hint = getString(R.string.goto_line_hint, editor.text.lineCount)
+        }
+        AlertDialog.Builder(this)
+            .setTitle(R.string.action_goto_line)
+            .setView(input)
+            .setPositiveButton(R.string.dialog_ok) { _, _ ->
+                val line = input.text.toString().toIntOrNull() ?: return@setPositiveButton
+                val target = (line - 1).coerceIn(0, editor.text.lineCount - 1)
+                editor.setSelection(target, 0)
+                editor.ensureSelectionVisible()
+                editor.requestFocus()
+            }
+            .setNegativeButton(R.string.dialog_cancel, null)
+            .show()
     }
 
     private fun showReferenceIndex() {
@@ -590,6 +641,18 @@ class EditorActivity : AppCompatActivity() {
             }
             R.id.action_reference -> {
                 showReferenceIndex()
+                true
+            }
+            R.id.action_comment -> {
+                toggleComment()
+                true
+            }
+            R.id.action_format -> {
+                autoFormat()
+                true
+            }
+            R.id.action_goto_line -> {
+                promptGoToLine()
                 true
             }
             android.R.id.home -> {

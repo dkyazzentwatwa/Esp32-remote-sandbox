@@ -158,4 +158,9 @@
         <item quantity="one">%1$d error · tap it to jump to the line</item>
         <item quantity="other">%1$d errors · tap one to jump to its line</item>
     </plurals>
+    <string name="action_comment">Comment / uncomment</string>
+    <string name="action_format">Auto format</string>
+    <string name="action_goto_line">Go to line…</string>
+    <string name="goto_line_hint">1 to %1$d</string>
+    <string name="format_no_changes">Already formatted</string>
 </resources>

@@ -50,6 +50,18 @@
         android:visible="false"
         app:showAsAction="never" />
     <item
+        android:id="@+id/action_comment"
+        android:title="@string/action_comment"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/action_format"
+        android:title="@string/action_format"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/action_goto_line"
+        android:title="@string/action_goto_line"
+        app:showAsAction="never" />
+    <item
         android:id="@+id/action_add_file"
         android:title="@string/action_add_file"
         app:showAsAction="never" />
