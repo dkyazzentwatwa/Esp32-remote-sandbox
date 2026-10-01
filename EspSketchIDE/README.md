@@ -15,11 +15,15 @@ Android phone, offline**. The design and plan are in
 
 - ✅ Sketch management: create, rename, delete and copy-from-example sketches
   in a folder you choose (Storage Access Framework, Arduino folder rules).
-- ✅ Multi-file editor: a tab per file, C/C++ highlighting, undo/redo, a
-  symbol bar for `{ } ( ) ; < > # "` and friends, adjustable text size, and
-  autosave.
-- ✅ Eight example sketches (Blink through WiFi and Bluetooth) that are checked
-  in CI to compile for the ESP32.
+- ✅ Multi-file editor: a tab per file, Arduino/C++ highlighting, find and
+  replace, Arduino/ESP autocomplete, undo/redo, a symbol bar for
+  `{ } ( ) ; < > # "` and friends, unsaved-file markers (`name •`), pinch or
+  Settings text size, word wrap, and autosave.
+- ✅ Dark-by-default IDE theme (Light / Dark / Follow system) and a Settings
+  screen (theme, font size, word wrap, symbol bar, board family, licenses).
+- ✅ 17 example sketches in an Examples screen, with separate ESP32 and ESP8266
+  versions where the APIs differ, and New sketch templates (Bare minimum,
+  Serial, WiFi station). CI compiles every example for its board.
 - 🧪 **Verify, Upload and Serial monitor (experimental)** for ESP32 boards, fully
   offline once the ESP32 board pack is installed. The compiler (Espressif's GCC
   14.2, built for Android) ships inside the APK; the build engine, image tools
@@ -53,9 +57,11 @@ TextMate C++ grammar that VS Code ships (from
 MIT; see `app/src/main/assets/textmate/cpp/NOTICE.md`), rendered by
 [sora-editor](https://github.com/Rosemoe/sora-editor)'s TextMate module with
 the app's own light and dark themes. Preprocessor lines, fixed-width types
-such as `uint8_t`, function definitions and calls are all coloured. Arduino
-names like `pinMode` or `OUTPUT` are ordinary identifiers to a C++ grammar, so
-they are not specially coloured. `.txt` files are shown without highlighting.
+such as `uint8_t`, function definitions and calls are all coloured. A small
+Arduino grammar (`app/src/main/assets/textmate/arduino.tmLanguage.json`) is
+injected on top to colour the Arduino/ESP API: functions such as `pinMode`,
+constants such as `HIGH` and `LED_BUILTIN`, and classes such as `Serial` and
+`WiFi`. `.txt` files are shown without highlighting.
 
 ## Roadmap
 
