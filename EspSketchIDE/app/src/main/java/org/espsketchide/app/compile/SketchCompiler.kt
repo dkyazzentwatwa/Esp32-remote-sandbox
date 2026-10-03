@@ -6,6 +6,7 @@ import org.espsketchide.buildengine.BuildProperties
 import org.espsketchide.buildengine.BuildRequest
 import org.espsketchide.buildengine.BuildResult
 import org.espsketchide.buildengine.Builder
+import org.espsketchide.buildengine.Library
 import org.espsketchide.buildengine.CompileException
 import org.espsketchide.buildengine.LocalProcessRunner
 import org.espsketchide.buildengine.MissingLibraryException
@@ -31,6 +32,10 @@ class SketchCompiler(
     private val pack: PackLayout,
     private val tmpDir: File,
     private val processRunner: (Map<String, String>) -> ProcessRunner = { env -> LocalProcessRunner(env) },
+    /** Libraries the user installed (Libraries screen), searched after the sketch's own. */
+    private val userLibraries: () -> List<Library> = { emptyList() },
+    /** A catalog library to suggest when a header is missing, e.g. "DHT.h" -> "DHT sensor library". */
+    private val suggestLibrary: (String) -> String? = { null },
 ) {
 
     fun compile(sketchDir: File, buildDir: File, boardId: String, listener: (BuildEvent) -> Unit = {}): CompileOutcome {
@@ -38,12 +43,17 @@ class SketchCompiler(
         val env = XtensaToolchainRunner(LocalProcessRunner(), toolchainTree, chip = pack.chip, gccVersion = pack.gccVersion, tmpDir = tmpDir).environment
         val runner = XtensaToolchainRunner(processRunner(env), toolchainTree, chip = pack.chip, gccVersion = pack.gccVersion, tmpDir = tmpDir)
         return try {
-            val result = Builder(request, Esp32BuildProfile, runner, listener = listener).build()
+            val result = Builder(request, Esp32BuildProfile, runner, userLibraries = userLibraries(), listener = listener).build()
             val flashSize = Esp32BuildProfile.flashSizeBytes(BuildProperties.assemble(request).expanded("build.flash_size"))
             CompileOutcome.Success(result, flashSize)
         } catch (e: MissingLibraryException) {
+            val suggestion = suggestLibrary(e.header)
             CompileOutcome.Failure(
-                "No installed library provides ${e.header}. This version can only use the libraries that come with the board pack.",
+                if (suggestion != null) {
+                    "${e.header} comes from the library \"$suggestion\". Install it in Libraries (sketch list menu), then verify again."
+                } else {
+                    "No installed library provides ${e.header}. Install it in Libraries (sketch list menu), or with Install from .zip."
+                },
                 e.output, Diagnostics.parse(e.output, sketchDir),
             )
         } catch (e: CompileException) {

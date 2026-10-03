@@ -16,6 +16,7 @@ import org.espsketchide.app.compile.SketchStager
 import org.espsketchide.app.compile.Toolchain
 import org.espsketchide.app.data.DocumentFileStorage
 import org.espsketchide.app.data.SketchRepository
+import org.espsketchide.app.libraries.LibraryManager
 import org.espsketchide.app.editor.EditorLanguages
 import org.espsketchide.app.settings.AppSettings
 import org.espsketchide.app.upload.SerialMonitor
@@ -45,6 +46,9 @@ class EspSketchApp : Application() {
 
     val boardPrefs by lazy { BoardPrefs(this) }
 
+    /** Library catalog, installer and downloads for the Libraries screen and the build. */
+    val libraries by lazy { LibraryManager(this, appScope) }
+
     val builds by lazy {
         BuildController(appScope, SketchStager(storage), File(cacheDir, "stage"), File(cacheDir, "builds"), ::compileBackend)
     }
@@ -63,7 +67,11 @@ class EspSketchApp : Application() {
         val pack = esp32Pack() ?: throw NotReadyException(getString(R.string.error_no_pack))
         synchronized(toolchain) { toolchain.prepare(pack) }
         val tmp = File(cacheDir, "tmp").apply { mkdirs() }
-        val compiler = SketchCompiler(toolchain.treeDir, pack, tmp)
+        val compiler = SketchCompiler(
+            toolchain.treeDir, pack, tmp,
+            userLibraries = { libraries.installer.installed() },
+            suggestLibrary = { header -> libraries.catalog.suggestFor(header)?.name },
+        )
         return CompileBackend(compiler::compile)
     }
 }

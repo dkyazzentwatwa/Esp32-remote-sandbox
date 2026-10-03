@@ -6,6 +6,11 @@
         android:title="@string/action_examples"
         app:showAsAction="never" />
     <item
+        android:id="@+id/action_libraries"
+        android:title="@string/libraries_title"
+        android:visible="false"
+        app:showAsAction="never" />
+    <item
         android:id="@+id/action_board_pack"
         android:title="@string/action_board_pack"
         android:visible="false"

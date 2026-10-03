@@ -1,0 +1,579 @@
+{
+  "libraries": [
+    {
+      "name": "DHT sensor library",
+      "version": "1.4.7",
+      "category": "Sensors",
+      "description": "DHT11 and DHT22 temperature and humidity sensors.",
+      "author": "Adafruit",
+      "url": "https://downloads.arduino.cc/libraries/github.com/adafruit/DHT_sensor_library-1.4.7.zip",
+      "archiveFileName": "DHT_sensor_library-1.4.7.zip",
+      "sha256": "5c5d3881b49840c7be98cc0848a48930bbac364fadc7edb7965fe98f9bb1463f",
+      "size": 18874,
+      "architectures": [
+        "*"
+      ],
+      "headers": [
+        "DHT.h",
+        "DHT_U.h"
+      ],
+      "dependencies": [
+        "Adafruit Unified Sensor"
+      ],
+      "dependency": false
+    },
+    {
+      "name": "Adafruit BMP280 Library",
+      "version": "3.0.0",
+      "category": "Sensors",
+      "description": "BMP280 air pressure and temperature sensor.",
+      "author": "Adafruit",
+      "url": "https://downloads.arduino.cc/libraries/github.com/adafruit/Adafruit_BMP280_Library-3.0.0.zip",
+      "archiveFileName": "Adafruit_BMP280_Library-3.0.0.zip",
+      "sha256": "415531a76ae32f65290e23cf41b21360244259e953838dd7c4d5ff571283e02e",
+      "size": 475447,
+      "architectures": [
+        "*"
+      ],
+      "headers": [
+        "Adafruit_BMP280.h"
+      ],
+      "dependencies": [
+        "Adafruit Unified Sensor",
+        "Adafruit BusIO"
+      ],
+      "dependency": false
+    },
+    {
+      "name": "Adafruit BME280 Library",
+      "version": "2.3.0",
+      "category": "Sensors",
+      "description": "BME280 temperature, humidity and pressure sensor.",
+      "author": "Adafruit",
+      "url": "https://downloads.arduino.cc/libraries/github.com/adafruit/Adafruit_BME280_Library-2.3.0.zip",
+      "archiveFileName": "Adafruit_BME280_Library-2.3.0.zip",
+      "sha256": "5aa74162cd944abb85143d2e9daa18b6dbe64f167f54c95d4e9e4f283573cfe5",
+      "size": 454847,
+      "architectures": [
+        "*"
+      ],
+      "headers": [
+        "Adafruit_BME280.h"
+      ],
+      "dependencies": [
+        "Adafruit Unified Sensor",
+        "Adafruit BusIO"
+      ],
+      "dependency": false
+    },
+    {
+      "name": "Adafruit MPU6050",
+      "version": "2.2.9",
+      "category": "Sensors",
+      "description": "MPU6050 accelerometer and gyroscope (motion, tilt).",
+      "author": "Adafruit",
+      "url": "https://downloads.arduino.cc/libraries/github.com/adafruit/Adafruit_MPU6050-2.2.9.zip",
+      "archiveFileName": "Adafruit_MPU6050-2.2.9.zip",
+      "sha256": "acaad12ee2399f3225e6725e421d92699b006d7359cdda6ea5281c6b832cfc56",
+      "size": 345663,
+      "architectures": [
+        "*"
+      ],
+      "headers": [
+        "Adafruit_MPU6050.h"
+      ],
+      "dependencies": [
+        "Adafruit BusIO",
+        "Adafruit Unified Sensor",
+        "Adafruit GFX Library",
+        "Adafruit SSD1306"
+      ],
+      "dependency": false
+    },
+    {
+      "name": "OneWire",
+      "version": "2.3.8",
+      "category": "Sensors",
+      "description": "1-Wire bus, needed by DS18B20 temperature probes.",
+      "author": "Jim Studt, Tom Pollard, Robin James, Glenn Trewitt, Jason Dangel, Guillermo Lovato, Paul Stoffregen, Scott Roberts, Bertrik Sikken, Mark Tillotson, Ken Butcher, Roger Clark, Love Nystrom",
+      "url": "https://downloads.arduino.cc/libraries/github.com/PaulStoffregen/OneWire-2.3.8.zip",
+      "archiveFileName": "OneWire-2.3.8.zip",
+      "sha256": "dd76d1480a2f4c94348e8c8307ea74206d2936d9c80c73be67783fd200f2be17",
+      "size": 23091,
+      "architectures": [
+        "*"
+      ],
+      "headers": [
+        "OneWire.h"
+      ],
+      "dependencies": [],
+      "dependency": false
+    },
+    {
+      "name": "DallasTemperature",
+      "version": "4.0.6",
+      "category": "Sensors",
+      "description": "DS18B20 waterproof temperature probes (use with OneWire).",
+      "author": "Miles Burton <mail@milesburton.com>, Tim Newsome <nuisance@casualhacker.net>, Guil Barros <gfbarros@bappos.com>, Rob Tillaart <rob.tillaart@gmail.com>",
+      "url": "https://downloads.arduino.cc/libraries/github.com/milesburton/DallasTemperature-4.0.6.zip",
+      "archiveFileName": "DallasTemperature-4.0.6.zip",
+      "sha256": "fb90dffd2bbd10b8eb5943968e8300ada5e4af17793b0f80c10359702d9de4e4",
+      "size": 46621,
+      "architectures": [
+        "*"
+      ],
+      "headers": [
+        "DallasTemperature.h"
+      ],
+      "dependencies": [
+        "OneWire"
+      ],
+      "dependency": false
+    },
+    {
+      "name": "NewPing",
+      "version": "1.9.7",
+      "category": "Sensors",
+      "description": "HC-SR04 ultrasonic distance sensor.",
+      "author": "Tim Eckel <eckel.tim@gmail.com>",
+      "url": "https://downloads.arduino.cc/libraries/bitbucket.org/teckel12/NewPing-1.9.7.zip",
+      "archiveFileName": "NewPing-1.9.7.zip",
+      "sha256": "7f4c4ef7f39a1ce8a6bf05580717712fc3e669ee5b0c343479569d5e2e374564",
+      "size": 20057,
+      "architectures": [
+        "avr",
+        "arm",
+        "megaavr",
+        "esp32"
+      ],
+      "headers": [
+        "NewPing.h"
+      ],
+      "dependencies": [],
+      "dependency": false
+    },
+    {
+      "name": "HCSR04",
+      "version": "2.0.0",
+      "category": "Sensors",
+      "description": "HC-SR04 ultrasonic distance sensor, simple version.",
+      "author": "Martin Sosic <sosic.martin@gmail.com>",
+      "url": "https://downloads.arduino.cc/libraries/github.com/Martinsos/HCSR04-2.0.0.zip",
+      "archiveFileName": "HCSR04-2.0.0.zip",
+      "sha256": "0461d1fc2f89939162cd366a5e4748739553387b8d16e29662ff324ac5704d5d",
+      "size": 17381,
+      "architectures": [
+        "*"
+      ],
+      "headers": [
+        "HCSR04.h"
+      ],
+      "dependencies": [],
+      "dependency": false
+    },
+    {
+      "name": "MFRC522",
+      "version": "1.4.12",
+      "category": "Sensors",
+      "description": "RC522 RFID card and tag reader.",
+      "author": "GithubCommunity",
+      "url": "https://downloads.arduino.cc/libraries/github.com/miguelbalboa/MFRC522-1.4.12.zip",
+      "archiveFileName": "MFRC522-1.4.12.zip",
+      "sha256": "1de4474b264de1b33ad015aff251a96ebc660b9997c9366199dfbad7bb7c39c1",
+      "size": 1279726,
+      "architectures": [
+        "avr",
+        "megaavr",
+        "STM32F1",
+        "teensy",
+        "esp8266",
+        "esp32",
+        "samd",
+        "atmelsam",
+        "rp2040"
+      ],
+      "headers": [
+        "MFRC522.h",
+        "MFRC522Extended.h",
+        "deprecated.h",
+        "require_cpp11.h"
+      ],
+      "dependencies": [],
+      "dependency": false
+    },
+    {
+      "name": "RTClib",
+      "version": "2.1.4",
+      "category": "Sensors",
+      "description": "DS3231 / DS1307 real-time clock modules.",
+      "author": "Adafruit",
+      "url": "https://downloads.arduino.cc/libraries/github.com/adafruit/RTClib-2.1.4.zip",
+      "archiveFileName": "RTClib-2.1.4.zip",
+      "sha256": "8dc4bbf8f25e12353533778f13295e9fe12ed6a92d66a8e8c062b24d83fe70dd",
+      "size": 52803,
+      "architectures": [
+        "*"
+      ],
+      "headers": [
+        "RTClib.h"
+      ],
+      "dependencies": [
+        "Adafruit BusIO"
+      ],
+      "dependency": false
+    },
+    {
+      "name": "Adafruit SSD1306",
+      "version": "2.5.17",
+      "category": "Displays",
+      "description": "Small 128×64 or 128×32 OLED displays (SSD1306).",
+      "author": "Adafruit",
+      "url": "https://downloads.arduino.cc/libraries/github.com/adafruit/Adafruit_SSD1306-2.5.17.zip",
+      "archiveFileName": "Adafruit_SSD1306-2.5.17.zip",
+      "sha256": "9b8a9c29a16576d66bce16ed9f6a731632fecbb477171f38a6bc033fda15dd06",
+      "size": 41831,
+      "architectures": [
+        "*"
+      ],
+      "headers": [
+        "Adafruit_SSD1306.h",
+        "splash.h"
+      ],
+      "dependencies": [
+        "Adafruit GFX Library"
+      ],
+      "dependency": false
+    },
+    {
+      "name": "ESP8266 and ESP32 OLED driver for SSD1306 displays",
+      "version": "4.6.2",
+      "category": "Displays",
+      "description": "SSD1306 OLED displays, a simpler driver made for ESP boards.",
+      "author": "ThingPulse, Fabrice Weinberg",
+      "url": "https://downloads.arduino.cc/libraries/github.com/ThingPulse/ESP8266_and_ESP32_OLED_driver_for_SSD1306_displays-4.6.2.zip",
+      "archiveFileName": "ESP8266_and_ESP32_OLED_driver_for_SSD1306_displays-4.6.2.zip",
+      "sha256": "d3c78711b5c87ea034a3b1280693673578a052c8f1a526f0d5d19ab9057c6e2c",
+      "size": 340248,
+      "architectures": [
+        "esp8266",
+        "esp32"
+      ],
+      "headers": [
+        "OLEDDisplay.h",
+        "OLEDDisplayFonts.h",
+        "OLEDDisplayUi.h",
+        "SH1106.h",
+        "SH1106Brzo.h",
+        "SH1106Spi.h",
+        "SH1106Wire.h",
+        "SSD1306.h",
+        "SSD1306Brzo.h",
+        "SSD1306I2C.h",
+        "SSD1306Spi.h",
+        "SSD1306Wire.h"
+      ],
+      "dependencies": [],
+      "dependency": false
+    },
+    {
+      "name": "LCD_I2C",
+      "version": "2.4.0",
+      "category": "Displays",
+      "description": "16×2 and 20×4 character LCDs with an I2C backpack.",
+      "author": "Blackhack",
+      "url": "https://downloads.arduino.cc/libraries/github.com/blackhack/LCD_I2C-2.4.0.zip",
+      "archiveFileName": "LCD_I2C-2.4.0.zip",
+      "sha256": "c4c5498707ce5c3586073fe30eb888ca4dee64883f80f1b7a727dac82d498f77",
+      "size": 23388,
+      "architectures": [
+        "*"
+      ],
+      "headers": [
+        "LCD_I2C.h"
+      ],
+      "dependencies": [],
+      "dependency": false
+    },
+    {
+      "name": "TM1637",
+      "version": "1.2.0",
+      "category": "Displays",
+      "description": "4-digit 7-segment displays (TM1637).",
+      "author": "Avishay Orpaz <avishorp@gmail.com>",
+      "url": "https://downloads.arduino.cc/libraries/github.com/avishorp/TM1637-1.2.0.zip",
+      "archiveFileName": "TM1637-1.2.0.zip",
+      "sha256": "ece036479f5d983d1656ff0a1b1d750a1289e231db6dfec8939473185bf80eb1",
+      "size": 1426198,
+      "architectures": [
+        "*"
+      ],
+      "headers": [
+        "TM1637Display.h"
+      ],
+      "dependencies": [],
+      "dependency": false
+    },
+    {
+      "name": "Adafruit NeoPixel",
+      "version": "1.15.5",
+      "category": "LEDs and motors",
+      "description": "WS2812 / NeoPixel addressable RGB LED strips and rings.",
+      "author": "Adafruit",
+      "url": "https://downloads.arduino.cc/libraries/github.com/adafruit/Adafruit_NeoPixel-1.15.5.zip",
+      "archiveFileName": "Adafruit_NeoPixel-1.15.5.zip",
+      "sha256": "3d767caa011ab3078df7fe3c3e0456359ce2bc309eba343932690a2c1612fd16",
+      "size": 85934,
+      "architectures": [
+        "*"
+      ],
+      "headers": [
+        "Adafruit_NeoPixel.h",
+        "rp2040_pio.h"
+      ],
+      "dependencies": [],
+      "dependency": false
+    },
+    {
+      "name": "ESP32Servo",
+      "version": "3.2.1",
+      "category": "LEDs and motors",
+      "description": "Hobby servo motors on the ESP32.",
+      "author": "Kevin Harrington,John K. Bennett",
+      "url": "https://downloads.arduino.cc/libraries/github.com/madhephaestus/ESP32Servo-3.2.1.zip",
+      "archiveFileName": "ESP32Servo-3.2.1.zip",
+      "sha256": "2fdebd81b1fb17cc52737ed1412ef23cd475ddec44e3a298f12d88cc881d9fa6",
+      "size": 57102,
+      "architectures": [
+        "esp32"
+      ],
+      "headers": [
+        "ESP32PWM.h",
+        "ESP32Servo.h"
+      ],
+      "dependencies": [],
+      "dependency": false
+    },
+    {
+      "name": "IRremoteESP8266",
+      "version": "2.9.0",
+      "category": "LEDs and motors",
+      "description": "Send and receive infrared remote-control codes.",
+      "author": "David Conran, Sebastien Warin, Mark Szabo, Ken Shirriff",
+      "url": "https://downloads.arduino.cc/libraries/github.com/markszabo/IRremoteESP8266-2.9.0.zip",
+      "archiveFileName": "IRremoteESP8266-2.9.0.zip",
+      "sha256": "b3d44bad787191ad5ad09435fe4fd759969a3b1f2e9703db37d43f4cd8a37724",
+      "size": 6891286,
+      "architectures": [
+        "esp8266",
+        "esp32"
+      ],
+      "headers": [
+        "IRac.h",
+        "IRmacros.h",
+        "IRrecv.h",
+        "IRremoteESP8266.h",
+        "IRsend.h",
+        "IRtext.h",
+        "IRtimer.h",
+        "IRutils.h",
+        "i18n.h",
+        "ir_Airton.h",
+        "ir_Airwell.h",
+        "ir_Amcor.h",
+        "ir_Argo.h",
+        "ir_Bosch.h",
+        "ir_Carrier.h",
+        "ir_Coolix.h",
+        "ir_Corona.h",
+        "ir_Daikin.h",
+        "ir_Delonghi.h",
+        "ir_Ecoclim.h",
+        "ir_Electra.h",
+        "ir_Eurom.h",
+        "ir_Fujitsu.h",
+        "ir_Goodweather.h",
+        "ir_Gree.h",
+        "ir_Haier.h",
+        "ir_Hitachi.h",
+        "ir_Kelon.h",
+        "ir_Kelvinator.h",
+        "ir_LG.h",
+        "ir_Magiquest.h",
+        "ir_Midea.h",
+        "ir_Mirage.h",
+        "ir_Mitsubishi.h",
+        "ir_MitsubishiHeavy.h",
+        "ir_NEC.h",
+        "ir_Neoclima.h",
+        "ir_Panasonic.h",
+        "ir_Rhoss.h",
+        "ir_Samsung.h",
+        "ir_Sanyo.h",
+        "ir_Sharp.h",
+        "ir_Tcl.h",
+        "ir_Technibel.h",
+        "ir_Teco.h",
+        "ir_Toshiba.h",
+        "ir_Transcold.h",
+        "ir_Trotec.h",
+        "ir_Truma.h",
+        "ir_Vestel.h",
+        "ir_Voltas.h",
+        "ir_Whirlpool.h",
+        "ir_York.h"
+      ],
+      "dependencies": [],
+      "dependency": false
+    },
+    {
+      "name": "Keypad",
+      "version": "3.1.1",
+      "category": "Input",
+      "description": "Matrix keypads (4×4, 4×3).",
+      "author": "Mark Stanley, Alexander Brevig",
+      "url": "https://downloads.arduino.cc/libraries/github.com/Chris--A/Keypad-3.1.1.zip",
+      "archiveFileName": "Keypad-3.1.1.zip",
+      "sha256": "816e366073a7ca0353b962a973ba3a7c6852f73f8cc2ccb8a6c5223807e5faf5",
+      "size": 32428,
+      "architectures": [
+        "*"
+      ],
+      "headers": [
+        "Key.h",
+        "Keypad.h"
+      ],
+      "dependencies": [],
+      "dependency": false
+    },
+    {
+      "name": "PubSubClient",
+      "version": "2.8.0",
+      "category": "Internet",
+      "description": "MQTT: send and receive messages through a broker (IoT dashboards).",
+      "author": "Nick O'Leary <nick.oleary@gmail.com>",
+      "url": "https://downloads.arduino.cc/libraries/github.com/knolleary/PubSubClient-2.8.0.zip",
+      "archiveFileName": "PubSubClient-2.8.0.zip",
+      "sha256": "f0849b93a2b02e263a6c157c374d6103caefba753a47dcbef64bbec620b079fe",
+      "size": 44426,
+      "architectures": [
+        "*"
+      ],
+      "headers": [
+        "PubSubClient.h"
+      ],
+      "dependencies": [],
+      "dependency": false
+    },
+    {
+      "name": "ArduinoJson",
+      "version": "7.4.3",
+      "category": "Internet",
+      "description": "Read and write JSON, e.g. from web APIs.",
+      "author": "Benoit Blanchon <blog.benoitblanchon.fr>",
+      "url": "https://downloads.arduino.cc/libraries/github.com/bblanchon/ArduinoJson-7.4.3.zip",
+      "archiveFileName": "ArduinoJson-7.4.3.zip",
+      "sha256": "cd8d2f7e4f06eb7e215beecb0de5326a82d047a994e84246572ad73ddc52746f",
+      "size": 517250,
+      "architectures": [
+        "*"
+      ],
+      "headers": [
+        "ArduinoJson.h",
+        "ArduinoJson.hpp"
+      ],
+      "dependencies": [],
+      "dependency": false
+    },
+    {
+      "name": "WiFiManager",
+      "version": "2.0.17",
+      "category": "Internet",
+      "description": "Set the Wi-Fi network from your phone instead of in the code.",
+      "author": "tzapu",
+      "url": "https://downloads.arduino.cc/libraries/github.com/tzapu/WiFiManager-2.0.17.zip",
+      "archiveFileName": "WiFiManager-2.0.17.zip",
+      "sha256": "88b64b7dd123f30b2e7fec0f96f260abd354507dff347c038b2abfd929ba35e1",
+      "size": 159779,
+      "architectures": [
+        "esp8266",
+        "esp32"
+      ],
+      "headers": [
+        "WiFiManager.h",
+        "strings_en.h",
+        "wm_consts_en.h",
+        "wm_strings_en.h",
+        "wm_strings_es.h"
+      ],
+      "dependencies": [],
+      "dependency": false
+    },
+    {
+      "name": "Adafruit Unified Sensor",
+      "version": "1.1.15",
+      "category": "Dependencies",
+      "description": "Required for all Adafruit Unified Sensor based libraries.",
+      "author": "Adafruit <info@adafruit.com>",
+      "url": "https://downloads.arduino.cc/libraries/github.com/adafruit/Adafruit_Unified_Sensor-1.1.15.zip",
+      "archiveFileName": "Adafruit_Unified_Sensor-1.1.15.zip",
+      "sha256": "d64cdec0b817535f568fc3b8b8d44e7e097749f5ab8040aea573f412a3cbaec6",
+      "size": 15418,
+      "architectures": [
+        "*"
+      ],
+      "headers": [
+        "Adafruit_Sensor.h"
+      ],
+      "dependencies": [],
+      "dependency": true
+    },
+    {
+      "name": "Adafruit BusIO",
+      "version": "1.17.4",
+      "category": "Dependencies",
+      "description": "This is a library for abstracting away UART, I2C and SPI interfacing",
+      "author": "Adafruit",
+      "url": "https://downloads.arduino.cc/libraries/github.com/adafruit/Adafruit_BusIO-1.17.4.zip",
+      "archiveFileName": "Adafruit_BusIO-1.17.4.zip",
+      "sha256": "c7bab1b6c6eee64b50964c8e149b795719a01f1d9dfcdcef170b35daa696349b",
+      "size": 31084,
+      "architectures": [
+        "*"
+      ],
+      "headers": [
+        "Adafruit_BusIO_Register.h",
+        "Adafruit_GenericDevice.h",
+        "Adafruit_I2CDevice.h",
+        "Adafruit_I2CRegister.h",
+        "Adafruit_SPIDevice.h"
+      ],
+      "dependencies": [],
+      "dependency": true
+    },
+    {
+      "name": "Adafruit GFX Library",
+      "version": "1.12.6",
+      "category": "Dependencies",
+      "description": "Adafruit GFX graphics core library, this is the 'core' class that all our other graphics libraries derive from.",
+      "author": "Adafruit",
+      "url": "https://downloads.arduino.cc/libraries/github.com/adafruit/Adafruit_GFX_Library-1.12.6.zip",
+      "archiveFileName": "Adafruit_GFX_Library-1.12.6.zip",
+      "sha256": "7d4dc7a7522716d2c88a3b1b9b13521d33cfeeae9ebffa42c2dba0559696a997",
+      "size": 357404,
+      "architectures": [
+        "*"
+      ],
+      "headers": [
+        "Adafruit_GFX.h",
+        "Adafruit_GrayOLED.h",
+        "Adafruit_SPITFT.h",
+        "Adafruit_SPITFT_Macros.h",
+        "gfxfont.h"
+      ],
+      "dependencies": [
+        "Adafruit BusIO"
+      ],
+      "dependency": true
+    }
+  ]
+}

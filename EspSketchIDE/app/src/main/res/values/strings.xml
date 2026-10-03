@@ -176,4 +176,12 @@
     <string name="lesson_try">Try this</string>
     <string name="pins_title">Pin guide</string>
     <string name="pins_legend">✅ safe to use  ·  ⚠️ read the note  ·  ⛔ don\'t use</string>
+    <string name="libraries_title">Libraries</string>
+    <string name="libraries_install">Install</string>
+    <string name="libraries_remove">Remove</string>
+    <string name="libraries_working">Installing…</string>
+    <string name="libraries_meta">%1$s · %2$s</string>
+    <string name="libraries_installed">Installed: %1$s</string>
+    <string name="libraries_removed">Removed %1$s</string>
+    <string name="libraries_install_zip">Install from .zip</string>
 </resources>

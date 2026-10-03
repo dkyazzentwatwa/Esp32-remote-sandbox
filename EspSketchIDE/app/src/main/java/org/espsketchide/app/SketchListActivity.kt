@@ -144,6 +144,7 @@ class SketchListActivity : AppCompatActivity() {
 
     override fun onPrepareOptionsMenu(menu: Menu): Boolean {
         menu.findItem(R.id.action_board_pack)?.isVisible = app.canCompile
+        menu.findItem(R.id.action_libraries)?.isVisible = app.canCompile
         return super.onPrepareOptionsMenu(menu)
     }
 
@@ -155,6 +156,10 @@ class SketchListActivity : AppCompatActivity() {
             }
             R.id.action_change_folder -> {
                 pickRootFolder.launch(null)
+                true
+            }
+            R.id.action_libraries -> {
+                startActivity(Intent(this, org.espsketchide.app.libraries.LibrariesActivity::class.java))
                 true
             }
             R.id.action_examples -> {
