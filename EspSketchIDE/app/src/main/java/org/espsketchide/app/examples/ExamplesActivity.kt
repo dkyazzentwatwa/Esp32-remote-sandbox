@@ -43,8 +43,10 @@ class ExamplesActivity : AppCompatActivity() {
                 ExampleCatalog.rows(ExampleCatalog.forBoard(catalog, board))
             }
             binding.exampleRecyclerView.adapter = ExampleAdapter(rows) { example ->
-                setResult(RESULT_OK, Intent().putExtra(RESULT_EXAMPLE_ID, example.id))
-                finish()
+                LessonCard.show(this@ExamplesActivity, example) {
+                    setResult(RESULT_OK, Intent().putExtra(RESULT_EXAMPLE_ID, example.id))
+                    finish()
+                }
             }
         }
     }

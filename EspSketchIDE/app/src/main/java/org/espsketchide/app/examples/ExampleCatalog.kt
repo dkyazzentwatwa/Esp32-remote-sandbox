@@ -10,7 +10,11 @@ data class Example(
     val category: String,
     val description: String,
     val variants: Map<String, String>,
+    val lesson: Lesson? = null,
 )
+
+/** What an example teaches, shown before the sketch opens. */
+data class Lesson(val learn: String, val wiring: String, val how: String, val tryThis: List<String>)
 
 /** A row of the Examples list: a category header or an example. */
 sealed interface ExampleRow {
@@ -31,6 +35,15 @@ object ExampleCatalog {
                 category = entry.getString("category"),
                 description = entry.optString("description"),
                 variants = variants.keys().asSequence().associateWith { variants.getString(it) },
+                lesson = entry.optJSONObject("lesson")?.let { l ->
+                    val tries = l.optJSONArray("tryThis")
+                    Lesson(
+                        learn = l.optString("learn"),
+                        wiring = l.optString("wiring"),
+                        how = l.optString("how"),
+                        tryThis = if (tries == null) emptyList() else (0 until tries.length()).map { tries.getString(it) },
+                    )
+                },
             )
         }
     }

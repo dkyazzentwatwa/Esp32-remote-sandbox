@@ -8,6 +8,16 @@
       "variants": {
         "esp32": "basics/Blink",
         "esp8266": "basics/Blink"
+      },
+      "lesson": {
+        "learn": "How every Arduino sketch is built: setup() runs once, loop() repeats forever. You'll switch a pin on and off.",
+        "wiring": "Nothing to wire: most ESP32 dev boards have a blue LED on GPIO 2 (LED_BUILTIN). Optional: an LED with a 220 Ω resistor from GPIO 2 to GND.",
+        "how": "pinMode() makes the pin an output. In loop(), digitalWrite(HIGH) turns the LED on, delay(1000) waits one second, LOW turns it off.",
+        "tryThis": [
+          "Make it blink twice as fast.",
+          "Make it stay on for 100 ms and off for 900 ms: a heartbeat.",
+          "Blink an SOS: three short, three long, three short."
+        ]
       }
     },
     {
@@ -18,6 +28,16 @@
       "variants": {
         "esp32": "basics/BlinkWithoutDelay",
         "esp8266": "basics/BlinkWithoutDelay"
+      },
+      "lesson": {
+        "learn": "How to time things without delay(), so your sketch can do several jobs at once.",
+        "wiring": "Nothing to wire: uses the built-in LED.",
+        "how": "millis() counts milliseconds since start. Each loop checks whether INTERVAL_MS has passed since the last change; only then it flips the LED. Nothing ever waits.",
+        "tryThis": [
+          "Change INTERVAL_MS to 100.",
+          "Print a message to Serial every 2 seconds while the LED keeps blinking.",
+          "Blink a second LED at a different speed."
+        ]
       }
     },
     {
@@ -28,6 +48,16 @@
       "variants": {
         "esp32": "basics/Button",
         "esp8266": "basics/Button"
+      },
+      "lesson": {
+        "learn": "How to read an input: a button, with the chip's built-in pull-up resistor.",
+        "wiring": "Nothing to wire: GPIO 0 is the BOOT button on ESP32 dev boards (FLASH on NodeMCU). Or wire your own button from a GPIO to GND and change BUTTON_PIN.",
+        "how": "INPUT_PULLUP holds the pin HIGH; pressing the button connects it to GND, so digitalRead() returns LOW while pressed.",
+        "tryThis": [
+          "Turn the LED on while the button is pressed.",
+          "Count presses and print the count (hint: react only when it changes from HIGH to LOW).",
+          "Make each press toggle the LED."
+        ]
       }
     },
     {
@@ -38,6 +68,16 @@
       "variants": {
         "esp32": "basics/AnalogRead_esp32",
         "esp8266": "basics/AnalogRead_esp8266"
+      },
+      "lesson": {
+        "learn": "How to measure a voltage, the way you read sensors like potentiometers, light sensors and soil-moisture probes.",
+        "wiring": "ESP32: potentiometer middle pin to GPIO 34, outer pins to 3.3 V and GND. ESP8266: middle pin to A0. Never put more than 3.3 V on a pin.",
+        "how": "analogRead() turns the voltage into a number: 0–4095 on the ESP32, 0–1023 on the ESP8266. The sketch prints it to the Serial Monitor.",
+        "tryThis": [
+          "Open the Serial plotter and turn the knob.",
+          "Use map() to print a percentage from 0 to 100.",
+          "Turn on the LED when the value is above half."
+        ]
       }
     },
     {
@@ -48,6 +88,16 @@
       "variants": {
         "esp32": "basics/Fade",
         "esp8266": "basics/Fade"
+      },
+      "lesson": {
+        "learn": "How PWM makes an LED look dimmer by switching it very fast.",
+        "wiring": "Nothing to wire: fades the built-in LED.",
+        "how": "analogWrite(pin, duty) sets brightness from 0 (off) to 255 (full). The loop raises and lowers duty a little at a time.",
+        "tryThis": [
+          "Make the fade slower.",
+          "Fade only up, then jump back to off.",
+          "Control the brightness with a potentiometer (combine with AnalogRead)."
+        ]
       }
     },
     {
@@ -58,6 +108,16 @@
       "variants": {
         "esp32": "comm/SerialEcho",
         "esp8266": "comm/SerialEcho"
+      },
+      "lesson": {
+        "learn": "How the board can receive text from your phone, not only send it.",
+        "wiring": "Nothing to wire. Open the Serial Monitor at 115200 baud and send something.",
+        "how": "Serial.available() says how many characters arrived; Serial.read() takes them one at a time and the sketch sends each one back.",
+        "tryThis": [
+          "Reply in capitals (hint: toupper()).",
+          "Turn the LED on when you send 1 and off when you send 0.",
+          "Read whole lines with Serial.readStringUntil('\\n')."
+        ]
       }
     },
     {
@@ -68,6 +128,16 @@
       "variants": {
         "esp32": "comm/HelloSerial",
         "esp8266": "comm/HelloSerial"
+      },
+      "lesson": {
+        "learn": "How to print messages and numbers from the board, the most useful debugging tool you have.",
+        "wiring": "Nothing to wire. Open the Serial Monitor at 115200 baud.",
+        "how": "Serial.begin(115200) starts the connection; Serial.print() and Serial.println() send text and numbers.",
+        "tryThis": [
+          "Print the time since start with millis().",
+          "Print a count-down from 10.",
+          "Print two numbers on one line separated by a space and open the plotter."
+        ]
       }
     },
     {
@@ -78,6 +148,16 @@
       "variants": {
         "esp32": "wifi/WiFiScan_esp32",
         "esp8266": "wifi/WiFiScan_esp8266"
+      },
+      "lesson": {
+        "learn": "How the board sees the Wi-Fi networks around it.",
+        "wiring": "Nothing to wire. Open the Serial Monitor.",
+        "how": "WiFi.scanNetworks() searches and returns how many networks it found; WiFi.SSID(i) and WiFi.RSSI(i) give each name and signal strength in dBm (closer to 0 is stronger).",
+        "tryThis": [
+          "Print only networks stronger than -70 dBm.",
+          "Count how many networks are open (no password).",
+          "Blink the LED once per network found."
+        ]
       }
     },
     {
@@ -88,6 +168,16 @@
       "variants": {
         "esp32": "wifi/WiFiConnect_esp32",
         "esp8266": "wifi/WiFiConnect_esp8266"
+      },
+      "lesson": {
+        "learn": "How to join your Wi-Fi network, the first step for any internet project.",
+        "wiring": "Nothing to wire. Put your network name and password in the sketch. Most boards only use 2.4 GHz networks.",
+        "how": "WiFi.begin() starts connecting; the loop waits until WiFi.status() is WL_CONNECTED, then prints the IP address the router gave the board.",
+        "tryThis": [
+          "Blink the LED fast while connecting and keep it on once connected.",
+          "Print the signal strength with WiFi.RSSI().",
+          "Reconnect automatically if the connection drops."
+        ]
       }
     },
     {
@@ -98,6 +188,16 @@
       "variants": {
         "esp32": "wifi/HttpGet_esp32",
         "esp8266": "wifi/HttpGet_esp8266"
+      },
+      "lesson": {
+        "learn": "How to fetch a web page or an API from the internet.",
+        "wiring": "Nothing to wire. Set your Wi-Fi name and password first.",
+        "how": "After connecting, HTTPClient sends a GET request; the response code (200 means OK) and the page text are printed.",
+        "tryThis": [
+          "Fetch a different URL.",
+          "Print only the first 200 characters of the reply.",
+          "Fetch the page again every 30 seconds."
+        ]
       }
     },
     {
@@ -108,6 +208,16 @@
       "variants": {
         "esp32": "wifi/WebServerHello_esp32",
         "esp8266": "wifi/WebServerHello_esp8266"
+      },
+      "lesson": {
+        "learn": "How the board can host its own web page that anyone on your Wi-Fi can open.",
+        "wiring": "Nothing to wire. Set your Wi-Fi details, upload, then open the IP address shown in the Serial Monitor in your phone's browser.",
+        "how": "The web server waits for browsers to connect; server.on(\"/\") says what to send back. server.handleClient() in loop() answers each request.",
+        "tryThis": [
+          "Change the page text and add a heading with <h1>.",
+          "Show millis() on the page so it changes when you refresh.",
+          "Add a second page at /led that turns the LED on."
+        ]
       }
     },
     {
@@ -118,6 +228,16 @@
       "variants": {
         "esp32": "wifi/NtpClock_esp32",
         "esp8266": "wifi/NtpClock_esp8266"
+      },
+      "lesson": {
+        "learn": "How the board gets the real date and time from the internet.",
+        "wiring": "Nothing to wire. Set your Wi-Fi details and your time zone.",
+        "how": "configTime() asks internet time servers (NTP) for the time; after that the board keeps time itself and the sketch prints it every second.",
+        "tryThis": [
+          "Print only the hour and minute.",
+          "Turn the LED on at a set time.",
+          "Print the day of the week."
+        ]
       }
     },
     {
@@ -127,6 +247,16 @@
       "description": "Start a Wi-Fi hotspot with a web page that switches the LED.",
       "variants": {
         "esp32": "wifi/WiFiAccessPointLed_esp32"
+      },
+      "lesson": {
+        "learn": "How the board can make its own Wi-Fi hotspot, with a web page that controls a pin.",
+        "wiring": "Nothing to wire: switches the built-in LED. Join the Wi-Fi \"EspSketch-LED\" (password circuithub) on your phone, then open 192.168.4.1.",
+        "how": "WiFi.softAP() starts a hotspot; the web server sends a page with On and Off buttons, and each button's address switches the LED.",
+        "tryThis": [
+          "Change the hotspot name and password.",
+          "Add a Blink button.",
+          "Show the LED's current state on the page."
+        ]
       }
     },
     {
@@ -136,6 +266,16 @@
       "description": "List Bluetooth Low Energy devices nearby.",
       "variants": {
         "esp32": "ble/BLEScan"
+      },
+      "lesson": {
+        "learn": "How the ESP32 finds Bluetooth Low Energy devices nearby: phones, watches, fitness bands, beacons.",
+        "wiring": "Nothing to wire. Open the Serial Monitor.",
+        "how": "BLEDevice::init() starts Bluetooth; the scanner listens for SCAN_SECONDS and lists each device's address, name and signal strength.",
+        "tryThis": [
+          "Print only devices that have a name.",
+          "Turn the LED on when a device is very close (RSSI above -50).",
+          "Scan for 10 seconds instead of 5."
+        ]
       }
     },
     {
@@ -146,6 +286,16 @@
       "variants": {
         "esp32": "esp/DeepSleepTimer_esp32",
         "esp8266": "esp/DeepSleepTimer_esp8266"
+      },
+      "lesson": {
+        "learn": "How to save battery: the board sleeps, using almost no power, and wakes up on a timer.",
+        "wiring": "ESP32: nothing to wire. ESP8266: connect GPIO16 (D0) to RST with a wire so the timer can wake the board.",
+        "how": "The board goes to deep sleep for SLEEP_SECONDS. Waking up is a restart, so the sketch runs from setup() again; loop() never runs.",
+        "tryThis": [
+          "Sleep for 30 seconds instead.",
+          "Blink the LED once each time it wakes.",
+          "Count wake-ups (ESP32: use a variable marked RTC_DATA_ATTR)."
+        ]
       }
     },
     {
@@ -155,6 +305,16 @@
       "description": "Read a capacitive touch pin (classic ESP32 only).",
       "variants": {
         "esp32": "esp/TouchSensor"
+      },
+      "lesson": {
+        "learn": "How the ESP32 can feel a finger without a button, using a touch pin.",
+        "wiring": "Attach a wire or a piece of foil to GPIO 4 (touch pin T0) and touch it.",
+        "how": "touchRead() returns a number that drops when you touch the pin; below THRESHOLD counts as touched.",
+        "tryThis": [
+          "Watch the values in the Serial plotter and pick a better THRESHOLD.",
+          "Make a touch toggle the LED.",
+          "Use two touch pins as + and - buttons."
+        ]
       }
     },
     {
@@ -165,6 +325,16 @@
       "variants": {
         "esp32": "esp/SavedCounter_esp32",
         "esp8266": "esp/SavedCounter_esp8266"
+      },
+      "lesson": {
+        "learn": "How to remember a value after the power goes off by saving it in flash memory.",
+        "wiring": "Nothing to wire. Press the board's EN/RST button to restart it and watch the count.",
+        "how": "On each start the sketch reads the count from flash, adds one, saves it back and prints it. ESP32 uses Preferences; ESP8266 uses EEPROM.",
+        "tryThis": [
+          "Reset the count when the BOOT button is held during start-up.",
+          "Also save the time since the last start.",
+          "Save your Wi-Fi name in flash instead of in the code."
+        ]
       }
     }
   ]

@@ -98,4 +98,16 @@ class ExampleAssetsTest {
             assertTrue(groups.all { it.second.isNotEmpty() })
         }
     }
+
+    @Test
+    fun `every example has a complete lesson`() {
+        examples.forEach { example ->
+            val lesson = example.lesson
+            assertTrue("${example.id} has no lesson", lesson != null)
+            assertFalse("${example.id} learn", lesson!!.learn.isBlank())
+            assertFalse("${example.id} wiring", lesson.wiring.isBlank())
+            assertFalse("${example.id} how", lesson.how.isBlank())
+            assertTrue("${example.id} try this", lesson.tryThis.isNotEmpty())
+        }
+    }
 }
