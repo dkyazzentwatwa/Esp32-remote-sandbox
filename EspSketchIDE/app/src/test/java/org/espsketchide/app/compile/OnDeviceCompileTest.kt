@@ -73,7 +73,7 @@ class OnDeviceCompileTest {
         }
 
         val qemuEnv = mapOf("QEMU_LD_PREFIX" to androidRoot!!, "ANDROID_ROOT" to "/system", "ANDROID_DATA" to "/data")
-        val compiler = SketchCompiler(toolchain.treeDir, pack, tmp.newFolder("cache", "tmp")) { env -> LocalProcessRunner(env + qemuEnv) }
+        val compiler = SketchCompiler(toolchain.treeDir, pack, tmp.newFolder("cache", "tmp"), processRunner = { env -> LocalProcessRunner(env + qemuEnv) })
         val dispatcher = UnconfinedTestDispatcher(testScheduler)
         val builds = BuildController(
             CoroutineScope(dispatcher), SketchStager(storage), File(tmp.root, "cache/stage"), File(tmp.root, "cache/builds"),
