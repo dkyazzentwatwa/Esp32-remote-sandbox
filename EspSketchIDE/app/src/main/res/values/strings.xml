@@ -174,4 +174,6 @@
     <string name="lesson_wiring">Wiring</string>
     <string name="lesson_how">How it works</string>
     <string name="lesson_try">Try this</string>
+    <string name="pins_title">Pin guide</string>
+    <string name="pins_legend">✅ safe to use  ·  ⚠️ read the note  ·  ⛔ don\'t use</string>
 </resources>

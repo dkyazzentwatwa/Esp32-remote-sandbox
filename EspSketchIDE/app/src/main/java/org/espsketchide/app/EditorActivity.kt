@@ -644,6 +644,10 @@ class EditorActivity : AppCompatActivity() {
                 showReferenceIndex()
                 true
             }
+            R.id.action_pins -> {
+                org.espsketchide.app.reference.PinGuide.show(this, settings.board)
+                true
+            }
             R.id.action_comment -> {
                 toggleComment()
                 true

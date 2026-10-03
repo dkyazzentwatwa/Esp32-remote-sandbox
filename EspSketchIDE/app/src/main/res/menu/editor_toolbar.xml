@@ -87,6 +87,9 @@
             <item
                 android:id="@+id/action_reference"
                 android:title="@string/reference_title" />
+            <item
+                android:id="@+id/action_pins"
+                android:title="@string/pins_title" />
         </menu>
     </item>
     <item

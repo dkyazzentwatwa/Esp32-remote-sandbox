@@ -1,0 +1,56 @@
+{
+  "boards": [
+    {
+      "board": "esp32",
+      "title": "ESP32 DevKit (classic ESP32)",
+      "notes": [
+        "Pins work at 3.3 V. Never connect 5 V to a GPIO.",
+        "ADC2 pins (marked ADC2) can't read analog values while Wi-Fi is on. Use ADC1 pins 32–39 for sensors.",
+        "In code, use the GPIO number, e.g. pinMode(4, OUTPUT)."
+      ],
+      "pins": [
+        {"name": "GPIO 0", "level": "caution", "features": "BOOT button · ADC2 · touch T1", "note": "Must be HIGH at power-up. Fine as a button input (the Button example uses it)."},
+        {"name": "GPIO 1 (TX)", "level": "avoid", "features": "USB serial TX", "note": "Used by Serial and for uploading."},
+        {"name": "GPIO 2", "level": "caution", "features": "On-board LED · ADC2 · touch T2", "note": "Must be LOW or unconnected while uploading. Good for an LED."},
+        {"name": "GPIO 3 (RX)", "level": "avoid", "features": "USB serial RX", "note": "Used by Serial and for uploading."},
+        {"name": "GPIO 4", "level": "safe", "features": "ADC2 · touch T0", "note": ""},
+        {"name": "GPIO 5", "level": "caution", "features": "SPI CS", "note": "Must be HIGH at power-up; fine as an output."},
+        {"name": "GPIO 6–11", "level": "avoid", "features": "Internal flash", "note": "Connected to the flash chip. Using them crashes the board."},
+        {"name": "GPIO 12", "level": "caution", "features": "ADC2 · touch T5", "note": "Must be LOW at power-up (sets flash voltage). Don't add pull-up resistors."},
+        {"name": "GPIO 13", "level": "safe", "features": "ADC2 · touch T4", "note": ""},
+        {"name": "GPIO 14", "level": "caution", "features": "ADC2 · touch T6", "note": "Outputs a signal during boot."},
+        {"name": "GPIO 15", "level": "caution", "features": "ADC2 · touch T3", "note": "Must be HIGH at power-up; outputs a signal during boot."},
+        {"name": "GPIO 16, 17", "level": "safe", "features": "UART2", "note": "Not available on WROVER modules (used by PSRAM)."},
+        {"name": "GPIO 18, 19, 23", "level": "safe", "features": "SPI SCK, MISO, MOSI", "note": ""},
+        {"name": "GPIO 21, 22", "level": "safe", "features": "I2C SDA, SCL", "note": "Default pins for Wire (displays, sensors)."},
+        {"name": "GPIO 25, 26", "level": "safe", "features": "DAC1, DAC2 · ADC2", "note": "Can output a real analog voltage with dacWrite()."},
+        {"name": "GPIO 27", "level": "safe", "features": "ADC2 · touch T7", "note": ""},
+        {"name": "GPIO 32, 33", "level": "safe", "features": "ADC1 · touch T9, T8", "note": "Analog input that works with Wi-Fi on."},
+        {"name": "GPIO 34, 35, 36, 39", "level": "caution", "features": "ADC1 · input only", "note": "Input only, no internal pull-ups. Best pins for analog sensors (36 = VP, 39 = VN)."}
+      ]
+    },
+    {
+      "board": "esp8266",
+      "title": "NodeMCU / Wemos D1 mini (ESP8266)",
+      "notes": [
+        "Pins work at 3.3 V. Never connect 5 V to a GPIO.",
+        "Board labels (D1, D2…) are not GPIO numbers. In code you can write D1 or 5.",
+        "The on-board LED is on D4 (GPIO 2) and turns on with LOW."
+      ],
+      "pins": [
+        {"name": "D0 (GPIO 16)", "level": "caution", "features": "Deep-sleep wake", "note": "No PWM, I2C or interrupts. Connect to RST to wake from deep sleep."},
+        {"name": "D1 (GPIO 5)", "level": "safe", "features": "I2C SCL", "note": "Default SCL for Wire."},
+        {"name": "D2 (GPIO 4)", "level": "safe", "features": "I2C SDA", "note": "Default SDA for Wire."},
+        {"name": "D3 (GPIO 0)", "level": "caution", "features": "FLASH button", "note": "Booting fails if held LOW at power-up. Fine as a button input."},
+        {"name": "D4 (GPIO 2)", "level": "caution", "features": "On-board LED (active LOW)", "note": "Booting fails if LOW at power-up."},
+        {"name": "D5 (GPIO 14)", "level": "safe", "features": "SPI SCK", "note": ""},
+        {"name": "D6 (GPIO 12)", "level": "safe", "features": "SPI MISO", "note": ""},
+        {"name": "D7 (GPIO 13)", "level": "safe", "features": "SPI MOSI", "note": ""},
+        {"name": "D8 (GPIO 15)", "level": "caution", "features": "SPI CS", "note": "Must be LOW at power-up; booting fails if pulled HIGH."},
+        {"name": "RX (GPIO 3), TX (GPIO 1)", "level": "avoid", "features": "USB serial", "note": "Used by Serial and for uploading."},
+        {"name": "A0", "level": "safe", "features": "The only analog input", "note": "0–3.3 V on NodeMCU/D1 mini boards (0–1 V on a bare module). Reads 0–1023."},
+        {"name": "SD2, SD3 (GPIO 9, 10)", "level": "avoid", "features": "Internal flash", "note": "Connected to the flash chip."}
+      ]
+    }
+  ]
+}

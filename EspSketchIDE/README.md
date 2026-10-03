@@ -19,6 +19,10 @@ Android phone, offline**. The design and plan are in
   replace, Arduino/ESP autocomplete, undo/redo, a symbol bar for
   `{ } ( ) ; < > # "` and friends, unsaved-file markers (`name •`), pinch or
   Settings text size, word wrap, and autosave.
+- ✅ Learning aids: compiler errors explained in plain language, an offline
+  Arduino reference (long-press a function), autocomplete that fills in
+  parameters, a pin guide for ESP32/ESP8266 boards, a lesson with every example,
+  Auto format and comment/uncomment, and a serial plotter.
 - ✅ Dark-by-default IDE theme (Light / Dark / Follow system) and a Settings
   screen (theme, font size, word wrap, symbol bar, board family, licenses).
 - ✅ 17 example sketches in an Examples screen, with separate ESP32 and ESP8266
@@ -31,7 +35,9 @@ Android phone, offline**. The design and plan are in
   arduino-cli and esptool byte for byte in our emulated tests (Android
   binaries under qemu, the ESP32 ROM in Espressif's QEMU), **but haven't been
   tried on many real phones and boards yet**, so the app labels them
-  experimental.
+  experimental. Update (Oct 2026): compiling now runs on a real phone (Pixel XL,
+  Android 10): Blink builds in about 70 s the first time and 27 s after that.
+  Upload still needs testing on a real board.
 - Only the libraries that come with the board pack (WiFi, BLE, Preferences,
   …) can be used for now; the library manager is next.
 - Builds without the compiler (the plain `assembleDebug` below) hide these
